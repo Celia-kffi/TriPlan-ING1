@@ -20,7 +20,7 @@ import java.util.Set;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 
-
+// CELIA MODIF PERSO
 // cat insert-request.json | socat tcp:localhost:45065 -
 // cat select-request.json | socat tcp:localhost:45065 -
 // mvn clean compile assembly:single install

@@ -29,6 +29,8 @@ public class ClientService {
     final String insertRequestOrder = "INSERT_CLIENT";
     final String selectRequestOrder = "SELECT_ALL_CLIENTS";
     final String deleteRequestOrder = "DELETE_CLIENT";
+    final String updateRequestOrder = "UPDATE_CLIENT";
+
 
     private final NetworkConfig networkConfig;
 
@@ -43,6 +45,10 @@ public class ClientService {
     public void deleteClient(Client client) throws InterruptedException, IOException {
         processClient(client, deleteRequestOrder);
     }
+    public void updateClient(Client client) throws InterruptedException, IOException {
+        processClient(client, updateRequestOrder);
+    }
+
 
     private void processClient(Client client, String requestOrder) throws InterruptedException, IOException {
         final Deque<ClientRequest> clientRequests = new ArrayDeque<>();

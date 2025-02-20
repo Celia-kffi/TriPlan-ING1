@@ -27,7 +27,9 @@ public class XMartCityService {
     private enum Queries {
         SELECT_ALL_CLIENTS("SELECT nom, prenom, age, nationalite, budget FROM clients "),
         INSERT_CLIENT("INSERT INTO clients (nom, prenom, age, nationalite, budget) VALUES (?, ?, ?, ?, ?)"),
-        DELETE_CLIENT("DELETE FROM clients WHERE nom = ? AND prenom = ?");
+        DELETE_CLIENT("DELETE FROM clients WHERE nom = ? AND prenom = ?"),
+        UPDATE_CLIENT("UPDATE clients SET age = ?, nationalite = ?, budget = ? WHERE nom = ? AND prenom = ?");
+
 
 
         private final String query;
@@ -60,6 +62,9 @@ public class XMartCityService {
                 break;
             case DELETE_CLIENT:
                 response = deleteClient(request, connection);
+                break;
+            case UPDATE_CLIENT:
+                response = updateClient(request, connection);
                 break;
             default:
                 break;
@@ -112,6 +117,25 @@ public class XMartCityService {
             return new Response(request.getRequestId(), "Client supprimé avec succès.");
         } else {
             return new Response(request.getRequestId(), "Client introuvable.");
+        }
+    }
+
+    private Response updateClient(final Request request, final Connection connection) throws SQLException, IOException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final Client client = objectMapper.readValue(request.getRequestBody(), Client.class);
+
+        final PreparedStatement stmt = connection.prepareStatement(Queries.UPDATE_CLIENT.query);
+        stmt.setInt(1, client.getAge());
+        stmt.setString(2, client.getNationalite());
+        stmt.setDouble(3, client.getBudget());
+        stmt.setString(4, client.getNom());
+        stmt.setString(5, client.getPrenom());
+        int rowsAffected = stmt.executeUpdate();
+
+        if (rowsAffected > 0) {
+            return new Response(request.getRequestId(), "Client mis à jour avec succès.");
+        } else {
+            return new Response(request.getRequestId(), "Client introuvable ou aucune modification effectuée.");
         }
     }
 }

@@ -56,15 +56,19 @@ public class GestionClients extends JFrame {
         JButton btnAjouter = new JButton("Ajouter un client");
         JButton btnSupprimer = new JButton("Supprimer un client");
         JButton btnActualiser = new JButton("Actualiser la liste");
+        JButton btnModifier = new JButton("Modifier un client");
 
         btnAjouter.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnSupprimer.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnActualiser.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btnModifier.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         panelButtons.add(Box.createVerticalStrut(10));
         panelButtons.add(btnAjouter);
         panelButtons.add(Box.createVerticalStrut(10));
         panelButtons.add(btnSupprimer);
+        panelButtons.add(Box.createVerticalStrut(10));
+        panelButtons.add(btnModifier);
         panelButtons.add(Box.createVerticalStrut(10));
         panelButtons.add(btnActualiser);
         panelButtons.add(Box.createVerticalStrut(10));
@@ -74,6 +78,7 @@ public class GestionClients extends JFrame {
         btnAjouter.addActionListener(this::ajouterClient);
         btnSupprimer.addActionListener(this::supprimerClient);
         btnActualiser.addActionListener(this::actualiserListe);
+        btnModifier.addActionListener(this::modifierClient);
 
         actualiserListe(null);
     }
@@ -136,4 +141,27 @@ public class GestionClients extends JFrame {
             JOptionPane.showMessageDialog(this, "Erreur de rafraîchissement : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
         }
     }
+    private void modifierClient(ActionEvent e) {
+        int selectedRow = tableClients.getSelectedRow();
+        if (selectedRow != -1) {
+            String nom = (String) tableModel.getValueAt(selectedRow, 0);
+            String prenom = (String) tableModel.getValueAt(selectedRow, 1);
+            String age = JOptionPane.showInputDialog(this, "Nouvel age :", tableModel.getValueAt(selectedRow, 2));
+            String nationalite = JOptionPane.showInputDialog(this, "Nouvelle nationalité :", tableModel.getValueAt(selectedRow, 3));
+            String budget = JOptionPane.showInputDialog(this, "Nouveau budget :", tableModel.getValueAt(selectedRow, 4));
+
+            if (age != null && nationalite != null && budget != null) {
+                try {
+                    Client client = new Client(nom, prenom, Integer.parseInt(age), nationalite, Double.parseDouble(budget));
+                    clientService.updateClient(client);
+                    JOptionPane.showMessageDialog(this, "Client modifié avec succès !");
+                    actualiserListe(null);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(this, "Erreur lors de la modification : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }
+    }
+
 }

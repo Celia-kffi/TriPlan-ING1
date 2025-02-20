@@ -20,8 +20,8 @@ public class InsertClientsClientRequest extends ClientRequest<Client, String> {
     @Override
     public String readResult(String body) throws IOException {
         final ObjectMapper mapper = new ObjectMapper();
-        final Map<String, Integer> clientIdMap = mapper.readValue(body, Map.class);
-        final String result = clientIdMap.get("client_id").toString();
+        final Map<String, Integer> clientId_clientMap = mapper.readValue(body, Map.class);
+        final String result = clientId_clientMap.get("client_id").toString();
         return result;
     }
 }

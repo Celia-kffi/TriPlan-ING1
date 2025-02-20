@@ -8,6 +8,7 @@ import org.yaml.snakeyaml.constructor.Constructor;
 
 import java.io.InputStream;
 
+
 //      sudo -i -u postgres
 //      psql -c "alter user pgil with password 'ezipspirit'"
 
@@ -88,4 +89,7 @@ public class DatabaseConnectionBasicConfiguration {
                 ", poolSize=" + poolSize +
                 '}';
     }
+
+
+
 }

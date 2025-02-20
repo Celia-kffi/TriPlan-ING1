@@ -1,36 +1,38 @@
 package edu.ezip.ing1.pds;
 
 import edu.ezip.commons.connectionpool.config.DatabaseConnectionBasicConfiguration;
-import edu.ezip.ing1.pds.commons.Request;
-import edu.ezip.ing1.pds.commons.Response;
-import edu.ezip.ing1.pds.business.server.XMartCityService;
+import edu.ezip.ing1.pds.business.dto.Client;
+import edu.ezip.ing1.pds.business.dto.Clients;
+import edu.ezip.ing1.pds.client.commons.ConfigLoader;
+import edu.ezip.ing1.pds.client.commons.NetworkConfig;
+import edu.ezip.ing1.pds.services.ClientService;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.sql.*;
+import java.io.IOException;
 
 public class GestionClients extends JFrame {
+
     private DefaultTableModel tableModel;
     private JTable tableClients;
-    private Connection connection;
+    private ClientService clientService;
 
-    public GestionClients() {
+    public GestionClients() throws IOException {
         setTitle("TriPlan - Gestion des Clients");
         setSize(600, 400);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        DatabaseConnectionBasicConfiguration config = DatabaseConnectionBasicConfiguration.getInstance();
         try {
-            String url = "jdbc:mysql://" + config.getHost() + ":" + config.getPort() + "/" + config.getDatabaseName();
-            connection = DriverManager.getConnection(url, config.getUsername(), config.getPassword());
-        } catch (SQLException e) {
+            final String networkConfigFile = "network.yaml";
+            final NetworkConfig networkConfig = ConfigLoader.loadConfig(NetworkConfig.class, networkConfigFile);
+            clientService = new ClientService(networkConfig);
+        } catch (Exception e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Connexion à la base échouée : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
-            System.exit(1);
+            JOptionPane.showMessageDialog(this, "Erreur de configuration réseau : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
         }
 
         JLabel title = new JLabel("TriPlan", SwingConstants.CENTER);
@@ -85,17 +87,13 @@ public class GestionClients extends JFrame {
 
         if (nom != null && prenom != null && age != null && nationalite != null && budget != null) {
             try {
-                PreparedStatement stmt = connection.prepareStatement("INSERT INTO clients (nom, prenom, age, nationalite, budget) VALUES (?, ?, ?, ?, ?)");
-                stmt.setString(1, nom);
-                stmt.setString(2, prenom);
-                stmt.setInt(3, Integer.parseInt(age));
-                stmt.setString(4, nationalite);
-                stmt.setDouble(5, Double.parseDouble(budget));
-                stmt.executeUpdate();
+                Client client = new Client(nom, prenom, Integer.parseInt(age), nationalite, Double.parseDouble(budget));
+                clientService.insertClient(client);
+                JOptionPane.showMessageDialog(this, "Client ajouté avec succès !");
                 actualiserListe(null);
-            } catch (SQLException ex) {
+            } catch (Exception ex) {
                 ex.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Erreur lors de l'ajout du client.", "Erreur", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Erreur lors de l'ajout du client : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -105,15 +103,15 @@ public class GestionClients extends JFrame {
         if (selectedRow != -1) {
             String nom = (String) tableModel.getValueAt(selectedRow, 0);
             String prenom = (String) tableModel.getValueAt(selectedRow, 1);
+
             try {
-                PreparedStatement stmt = connection.prepareStatement("DELETE FROM clients WHERE nom = ? AND prenom = ?");
-                stmt.setString(1, nom);
-                stmt.setString(2, prenom);
-                stmt.executeUpdate();
-                tableModel.removeRow(selectedRow);
-            } catch (SQLException ex) {
+                Client client = new Client(nom, prenom, 0, "", 0.0);
+                clientService.deleteClient(client);
+                actualiserListe(null);
+                JOptionPane.showMessageDialog(this, "Client supprimé avec succès !");
+            } catch (Exception ex) {
                 ex.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Erreur lors de la suppression du client.", "Erreur", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Erreur lors de la suppression : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -121,27 +119,21 @@ public class GestionClients extends JFrame {
     private void actualiserListe(ActionEvent e) {
         tableModel.setRowCount(0);
         try {
-            Statement stmt = connection.createStatement();
-            ResultSet res = stmt.executeQuery("SELECT nom, prenom, age, nationalite, budget FROM clients");
-            while (res.next()) {
-                tableModel.addRow(new Object[]{
-                        res.getString("nom"),
-                        res.getString("prenom"),
-                        res.getInt("age"),
-                        res.getString("nationalite"),
-                        res.getDouble("budget")
-                });
+            Clients clients = clientService.selectClients();
+            if (clients != null) {
+                for (Client client : clients.getClients()) {
+                    tableModel.addRow(new Object[]{
+                            client.getNom(),
+                            client.getPrenom(),
+                            client.getAge(),
+                            client.getNationalite(),
+                            client.getBudget()
+                    });
+                }
             }
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Erreur lors de la récupération des clients.", "Erreur", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Erreur de rafraîchissement : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
         }
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            GestionClients gestionClients = new GestionClients();
-            gestionClients.setVisible(true);
-        });
     }
 }

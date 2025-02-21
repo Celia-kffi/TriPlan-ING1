@@ -8,6 +8,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+
+import edu.ezip.ing1.pds.business.dto.AvisClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +17,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.ezip.ing1.pds.business.dto.Client;
-import edu.ezip.ing1.pds.business.dto.Clients;
+
 import edu.ezip.ing1.pds.commons.Request;
 import edu.ezip.ing1.pds.commons.Response;
 
@@ -25,11 +27,14 @@ public class XMartCityService {
     private final Logger logger = LoggerFactory.getLogger(LoggingLabel);
 
     private enum Queries {
+
+        SELECT_ALL_AVIS("SELECT id_avis, note, date_avis, commentaires, id_client FROM avis_clients"),
+        INSERT_AVIS("INSERT INTO avis_clients (note, date_avis, commentaires, id_client) VALUES (?, ?, ?, ?)");
+
         SELECT_ALL_CLIENTS("SELECT nom, prenom, age, nationalite, budget FROM clients "),
         INSERT_CLIENT("INSERT INTO clients (nom, prenom, age, nationalite, budget) VALUES (?, ?, ?, ?, ?)"),
         DELETE_CLIENT("DELETE FROM clients WHERE nom = ? AND prenom = ?"),
         UPDATE_CLIENT("UPDATE clients SET age = ?, nationalite = ?, budget = ? WHERE nom = ? AND prenom = ?");
-
 
 
         private final String query;
@@ -54,14 +59,11 @@ public class XMartCityService {
         Response response = null;
         final Queries queryEnum = Enum.valueOf(Queries.class, request.getRequestOrder());
         switch (queryEnum) {
-            case SELECT_ALL_CLIENTS:
-                response = selectAllClients(request, connection);
+            case SELECT_ALL_AVIS:
+                response = selectAllAvis(request, connection);
                 break;
-            case INSERT_CLIENT:
-                response = insertClient(request, connection);
-                break;
-            case DELETE_CLIENT:
-                response = deleteClient(request, connection);
+            case INSERT_AVIS:
+                response = insertAvis(request, connection);
                 break;
             case UPDATE_CLIENT:
                 response = updateClient(request, connection);
@@ -71,6 +73,8 @@ public class XMartCityService {
         }
         return response;
     }
+
+    private Response insertAvis(final Request request, final Connection connection) throws SQLException, IOException {
 
     private Response insertClient(final Request request, final Connection connection) throws SQLException, IOException {
         final ObjectMapper objectMapper = new ObjectMapper();
@@ -105,8 +109,35 @@ public class XMartCityService {
     }
 
     private Response deleteClient(final Request request, final Connection connection) throws SQLException, IOException {
+
         final ObjectMapper objectMapper = new ObjectMapper();
-        final Client client = objectMapper.readValue(request.getRequestBody(), Client.class);
+        final AvisClient avisClient = objectMapper.readValue(request.getRequestBody(), AvisClient.class);
+
+        final PreparedStatement stmt = connection.prepareStatement(Queries.INSERT_AVIS.query);
+        stmt.setInt(1, avisClient.getNote());
+        stmt.setString(2, avisClient.getDateAvis());
+        stmt.setString(3, avisClient.getCommentaires());
+        stmt.setInt(4, avisClient.getIdClient());
+        stmt.executeUpdate();
+
+        return new Response(request.getRequestId(), objectMapper.writeValueAsString(avisClient));
+    }
+
+    private Response selectAllAvis(final Request request, final Connection connection) throws SQLException, JsonProcessingException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final Statement stmt = connection.createStatement();
+        final ResultSet res = stmt.executeQuery(Queries.SELECT_ALL_AVIS.query);
+        AvisClients avisClients = new AvisClients();
+        while (res.next()) {
+            AvisClient avisClient = new AvisClient();
+            avisClient.setIdAvis(res.getInt("id__avis"));
+            avisClient.setNote(res.getInt("note"));
+            avisClient.setDateAvis(res.getString("date_avis"));
+            avisClient.setCommentaires(res.getString("commentaires"));
+            avisClient.setIdClient(res.getInt("id_client"));
+            avisClients.add(avisClient);
+        }
+        return new Response(request.getRequestId(), objectMapper.writeValueAsString(avisClients));
 
         final PreparedStatement stmt = connection.prepareStatement(Queries.DELETE_CLIENT.query);
         stmt.setString(1, client.getNom());
@@ -137,5 +168,6 @@ public class XMartCityService {
         } else {
             return new Response(request.getRequestId(), "Client introuvable ou aucune modification effectuée.");
         }
+
     }
 }

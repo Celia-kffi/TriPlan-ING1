@@ -10,14 +10,26 @@ import java.sql.SQLException;
 
 @JsonRootName(value = "client")
 public class Client {
+   // private int idClient;
     private String nom;
     private String prenom;
     private int age;
     private String nationalite;
     private double budget;
-    private int idClient;
+
 
     public Client() {
+    }
+
+    public final Client build(final ResultSet resultSet)
+            throws SQLException, NoSuchFieldException, IllegalAccessException {
+        setFieldsFromResulset(resultSet, "nom", "prenom", "age", "nationalite", "budget", "idClient");
+        return this;
+    }
+
+    public final PreparedStatement build(PreparedStatement preparedStatement)
+            throws SQLException, NoSuchFieldException, IllegalAccessException {
+        return buildPreparedStatement(preparedStatement, nom, prenom, String.valueOf(age), nationalite, String.valueOf(budget));
     }
 
     public Client(String nom, String prenom, int age, String nationalite, double budget) {
@@ -28,16 +40,6 @@ public class Client {
         this.budget = budget;
     }
 
-    public final Client build(final ResultSet resultSet)
-            throws SQLException, NoSuchFieldException, IllegalAccessException {
-        setFieldsFromResultSet(resultSet, "nom", "prenom", "age", "nationalite", "budget", "idClient");
-        return this;
-    }
-
-    public final PreparedStatement build(PreparedStatement preparedStatement)
-            throws SQLException, NoSuchFieldException, IllegalAccessException {
-        return buildPreparedStatement(preparedStatement, nom, prenom, age, nationalite, budget);
-    }
 
 
     public String getNom() {
@@ -60,50 +62,55 @@ public class Client {
         return budget;
     }
 
-    public int getIdClient() {
+    /*public int getIdClient() {
         return idClient;
-    }
+    }*/
 
+   /* @JsonProperty("id")
+    public void setIdClient(int idClient) {
+        this.idClient = idClient;
+    }*/
 
-    @JsonProperty("client_nom")
+    @JsonProperty("nom")
     public void setNom(String nom) {
         this.nom = nom;
     }
 
-    @JsonProperty("client_prenom")
+    @JsonProperty("prenom")
     public void setPrenom(String prenom) {
         this.prenom = prenom;
     }
 
-    @JsonProperty("client_age")
+    @JsonProperty("age")
     public void setAge(int age) {
         this.age = age;
     }
 
-    @JsonProperty("client_nationalite")
+    @JsonProperty("nationalite")
     public void setNationalite(String nationalite) {
         this.nationalite = nationalite;
     }
 
-    @JsonProperty("client_budget")
+    @JsonProperty("budget")
     public void setBudget(double budget) {
         this.budget = budget;
     }
 
-    @JsonProperty("client_id")
-    public void setIdClient(int idClient) {
-        this.idClient = idClient;
-    }
 
-    private void setFieldsFromResultSet(final ResultSet resultSet, final String... fieldNames)
+
+    private void setFieldsFromResulset(final ResultSet resultSet, final String... fieldNames)
             throws NoSuchFieldException, SQLException, IllegalAccessException {
         for (final String fieldName : fieldNames) {
             final Field field = this.getClass().getDeclaredField(fieldName);
-            field.set(this, resultSet.getObject(fieldName));
+            if (field.getType() == int.class) {
+                field.set(this, resultSet.getInt(fieldName));
+            } else {
+                field.set(this, resultSet.getObject(fieldName));
+            }
         }
     }
 
-    private final PreparedStatement buildPreparedStatement(PreparedStatement preparedStatement, final Object... fieldValues)
+    private final PreparedStatement buildPreparedStatement(PreparedStatement preparedStatement, final String... fieldValues)
             throws SQLException {
         int ix = 0;
         for (final Object fieldValue : fieldValues) {
@@ -115,8 +122,7 @@ public class Client {
     @Override
     public String toString() {
         return "Client{" +
-                "idClient=" + idClient +
-                ", nom='" + nom + '\'' +
+                "nom='" + nom + '\'' +
                 ", prenom='" + prenom + '\'' +
                 ", age=" + age +
                 ", nationalite='" + nationalite + '\'' +

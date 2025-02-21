@@ -84,7 +84,7 @@ public class XMartCityService {
         AvisClients avisClients = new AvisClients();
         while (res.next()) {
             AvisClient avisClient = new AvisClient();
-            avisClient.setIdAvis(res.getInt("id_avis"));
+            avisClient.setIdAvis(res.getInt("id__avis"));
             avisClient.setNote(res.getInt("note"));
             avisClient.setDateAvis(res.getString("date_avis"));
             avisClient.setCommentaires(res.getString("commentaires"));

@@ -31,7 +31,6 @@ public class ClientService {
     final String deleteRequestOrder = "DELETE_CLIENT";
     final String updateRequestOrder = "UPDATE_CLIENT";
 
-
     private final NetworkConfig networkConfig;
 
     public ClientService(NetworkConfig networkConfig) {
@@ -45,6 +44,7 @@ public class ClientService {
     public void deleteClient(Client client) throws InterruptedException, IOException {
         processClient(client, deleteRequestOrder);
     }
+
     public void updateClient(Client client) throws InterruptedException, IOException {
         processClient(client, updateRequestOrder);
     }

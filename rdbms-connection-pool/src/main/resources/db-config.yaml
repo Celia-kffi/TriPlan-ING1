@@ -1,6 +1,6 @@
-databaseName: "triplan"
-host: "127.0.0.1"
-port: 3306
-username : "root"
-password: ""
+databaseName: "xmart_city"
+host: "localhost"
+port: 3307
+username: "kouffi"
+password: "celia"
 poolSize: 1

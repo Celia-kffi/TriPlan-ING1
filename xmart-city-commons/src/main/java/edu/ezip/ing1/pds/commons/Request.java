@@ -14,6 +14,16 @@ public class Request {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String requestBody;
+    public Request() {
+        // Obligatoire pour Jackson
+    }
+    public Request(String requestOrder, String requestBody) {
+        if (requestOrder == null || requestOrder.isEmpty()) {
+            throw new IllegalArgumentException("requestOrder ne peut pas Ãªtre null ou vide !");
+        }
+        this.requestOrder = requestOrder;
+        this.requestBody = requestBody;
+    }
 
     @JsonProperty("request_order")
     public void setRequestOrder(String requestOrder) {
@@ -34,6 +44,8 @@ public class Request {
         this.requestId = requestId;
     }
 
+
+    @JsonProperty("request_id")
     public String getRequestId() {
         return requestId;
     }

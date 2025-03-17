@@ -8,7 +8,7 @@ cd /d/propre/propre/xmart-city-backend/target
 
 scp -P 121  xmart-zity-backend-1.0-SNAPSHOT-jar-with-dependencies.jar backend@172.31.250.95:backend2.jar
 
-# put thepassword manually for the server backend
+# put thepassword manually for the backend
 
 if [ $? -eq 0 ]; then
     echo "File sent successfully."

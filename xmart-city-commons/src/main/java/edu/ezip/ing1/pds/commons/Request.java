@@ -19,7 +19,7 @@ public class Request {
     }
     public Request(String requestOrder, String requestBody) {
         if (requestOrder == null || requestOrder.isEmpty()) {
-            throw new IllegalArgumentException("requestOrder ne peut pas Ãªtre null ou vide !");
+            throw new IllegalArgumentException("requestOrder ne peut pas etre null ou vide !");
         }
         this.requestOrder = requestOrder;
         this.requestBody = requestBody;

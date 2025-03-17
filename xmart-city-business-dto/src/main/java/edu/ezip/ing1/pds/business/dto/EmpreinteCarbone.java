@@ -11,24 +11,18 @@ import java.sql.SQLException;
 @JsonRootName(value = "empreinte_carbone")
 public class EmpreinteCarbone {
     private int idEmpreinte;
-    private int empreinteKgCO2;
+    private double empreinteKgCO2;
     private String typeDeTransport;
     private double facteurEmission;
     private double distance;
 
-    public EmpreinteCarbone() {
-    }
+    public EmpreinteCarbone() {}
 
-    public EmpreinteCarbone(int idEmpreinte, int empreinteKgCO2, String typeDeTransport, double facteurEmission, double distance) {
-        this.idEmpreinte = idEmpreinte;
+    public EmpreinteCarbone(double empreinteKgCO2, String typeDeTransport, double facteurEmission, double distance) {
         this.empreinteKgCO2 = empreinteKgCO2;
         this.typeDeTransport = typeDeTransport;
         this.facteurEmission = facteurEmission;
         this.distance = distance;
-    }
-
-    public EmpreinteCarbone(int empreinteKgCO2, String typeDeTransport, double facteurEmission, double distance) {
-        this(0, empreinteKgCO2, typeDeTransport, facteurEmission, distance); // ID par dÃ©faut = 0
     }
 
     public final EmpreinteCarbone build(final ResultSet resultSet)
@@ -46,7 +40,7 @@ public class EmpreinteCarbone {
         return idEmpreinte;
     }
 
-    public int getEmpreinteKgCO2() {
+    public double getEmpreinteKgCO2() {
         return empreinteKgCO2;
     }
 
@@ -68,7 +62,7 @@ public class EmpreinteCarbone {
     }
 
     @JsonProperty("empreinte_kgCO2")
-    public void setEmpreinteKgCO2(int empreinteKgCO2) {
+    public void setEmpreinteKgCO2(double empreinteKgCO2) {
         this.empreinteKgCO2 = empreinteKgCO2;
     }
 
@@ -95,11 +89,10 @@ public class EmpreinteCarbone {
         }
     }
 
-    private final PreparedStatement buildPreparedStatement(PreparedStatement preparedStatement, final Object... fieldValues)
+    private final PreparedStatement buildPreparedStatement(PreparedStatement preparedStatement, final Object... values)
             throws SQLException {
-        int ix = 0;
-        for (final Object value : fieldValues) {
-            preparedStatement.setObject(++ix, value);
+        for (int i = 0; i < values.length; i++) {
+            preparedStatement.setObject(i + 1, values[i]);
         }
         return preparedStatement;
     }

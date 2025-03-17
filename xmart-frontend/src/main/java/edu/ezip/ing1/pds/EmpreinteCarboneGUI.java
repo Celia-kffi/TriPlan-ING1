@@ -1,4 +1,5 @@
-package edu.ezip.ing1.pds ;
+package edu.ezip.ing1.pds;
+
 import edu.ezip.ing1.pds.business.dto.EmpreinteCarbone;
 import edu.ezip.ing1.pds.services.EmpreinteCarboneService;
 import edu.ezip.ing1.pds.client.commons.ConfigLoader;
@@ -6,24 +7,8 @@ import edu.ezip.ing1.pds.client.commons.NetworkConfig;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
-import java.sql.SQLException;
-import edu.ezip.ing1.pds.client.commons.ClientRequest;
-import edu.ezip.ing1.pds.commons.Request;
-import edu.ezip.ing1.pds.client.commons.ClientRequest;
-import edu.ezip.ing1.pds.client.commons.NetworkConfig;
-import edu.ezip.ing1.pds.commons.Request;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import javax.swing.JOptionPane;
-import java.sql.SQLException;
 
 public class EmpreinteCarboneGUI {
     private JFrame frame;
@@ -44,9 +29,7 @@ public class EmpreinteCarboneGUI {
         put("Pieds", 0.00);
     }};
 
-
     public EmpreinteCarboneGUI() {
-
         try {
             final String networkConfigFile = "network.yaml";
             final NetworkConfig networkConfig = ConfigLoader.loadConfig(NetworkConfig.class, networkConfigFile);
@@ -56,6 +39,7 @@ public class EmpreinteCarboneGUI {
             JOptionPane.showMessageDialog(null, "Erreur de configuration réseau : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
             System.exit(1);
         }
+
         frame = new JFrame("Calculateur Empreinte Carbone");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(400, 300);
@@ -118,7 +102,7 @@ public class EmpreinteCarboneGUI {
                 empreinteCarbone.setFacteurEmission(facteurEmission);
                 empreinteCarbone.setDistance(distance);
 
-                empreinteCarboneService.insertEmpreinteCarbonePublic(empreinteCarbone);
+                empreinteCarboneService.insertEmpreinteCarbone(empreinteCarbone);
 
                 JOptionPane.showMessageDialog(frame, "Empreinte carbone ajoutée avec succès !");
                 resultLabel.setText(String.format("Empreinte carbone : %.2f kgCO2", empreinte));
@@ -126,12 +110,13 @@ public class EmpreinteCarboneGUI {
             } catch (NumberFormatException ex) {
                 resultLabel.setText("Veuillez entrer une distance valide.");
                 JOptionPane.showMessageDialog(frame, "Erreur : Distance invalide.", "Erreur", JOptionPane.ERROR_MESSAGE);
-            } catch (SQLException ex) {
-                ex.printStackTrace();  // Afficher l'erreur dans la console
-                JOptionPane.showMessageDialog(frame, "Erreur lors de l'ajout dans la base de données : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(frame, "Erreur inattendue : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
             }
         }
+    }
+
+    public static void main(String[] args) {
+        new EmpreinteCarboneGUI();
     }
 }

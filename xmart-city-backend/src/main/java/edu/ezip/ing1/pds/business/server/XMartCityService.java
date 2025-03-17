@@ -32,7 +32,9 @@ public class XMartCityService {
         DELETE_CLIENT("DELETE FROM clients WHERE id_client = ? "),
         UPDATE_CLIENT("UPDATE clients SET nom = ?, prenom = ?, age = ?, nationalite = ?, budget = ?, id_paiement = ? WHERE id_client = ?"),
         SELECT_ALL_EMPREINTES("SELECT id_empreinte, empreinte_kgCO2, type_de_transport, facteur_emission, distance FROM empreinte_carbone"),
-        INSERT_EMPREINTE("INSERT INTO empreinte_carbone (empreinte_kgCO2, type_de_transport, facteur_emission, distance) VALUES(?,?,?,?)");
+        INSERT_EMPREINTE("INSERT INTO empreinte_carbone (empreinte_kgCO2, type_de_transport, facteur_emission, distance) VALUES (?, ?, ?, ?)"),
+        DELETE_EMPREINTE("DELETE FROM empreinte_carbone WHERE id_empreinte = ?"),
+        UPDATE_EMPREINTE("UPDATE empreinte_carbone SET empreinte_kgCO2 = ?, type_de_transport = ?, facteur_emission = ?, distance = ? WHERE id_empreinte = ?");
 
         private final String query;
 
@@ -79,6 +81,12 @@ public class XMartCityService {
                 break;
             case INSERT_EMPREINTE:
                 response = insertEmpreinte(request, connection);
+                break;
+            case DELETE_EMPREINTE:
+                response = deleteEmpreinte(request, connection);
+                break;
+            case UPDATE_EMPREINTE:
+                response = updateEmpreinte(request, connection);
                 break;
             default:
                 break;
@@ -222,6 +230,38 @@ public class XMartCityService {
         }
         return new Response(request.getRequestId(), objectMapper.writeValueAsString(empreintes));
     }
+    private Response deleteEmpreinte(final Request request, final Connection connection) throws SQLException, IOException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final EmpreinteCarbone empreinte = objectMapper.readValue(request.getRequestBody(), EmpreinteCarbone.class);
 
+        try (PreparedStatement stmt = connection.prepareStatement(Queries.DELETE_EMPREINTE.query)) {
+            stmt.setInt(1, empreinte.getIdEmpreinte());
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows == 0) {
+                return new Response(request.getRequestId(), "Aucune empreinte trouvée avec cet ID.");
+            }
+        }
+
+        return new Response(request.getRequestId(), "Empreinte supprimée avec succès");
+    }
+
+    private Response updateEmpreinte(final Request request, final Connection connection) throws SQLException, IOException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final EmpreinteCarbone empreinte = objectMapper.readValue(request.getRequestBody(), EmpreinteCarbone.class);
+
+        try (PreparedStatement stmt = connection.prepareStatement(Queries.UPDATE_EMPREINTE.query)) {
+            stmt.setDouble(1, empreinte.getEmpreinteKgCO2());
+            stmt.setString(2, empreinte.getTypeDeTransport());
+            stmt.setDouble(3, empreinte.getFacteurEmission());
+            stmt.setDouble(4, empreinte.getDistance());
+            stmt.setInt(5, empreinte.getIdEmpreinte());
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows == 0) {
+                return new Response(request.getRequestId(), "Aucune empreinte mise à jour, ID introuvable.");
+            }
+        }
+
+        return new Response(request.getRequestId(), "Empreinte mise à jour avec succès");
+    }
 
 }

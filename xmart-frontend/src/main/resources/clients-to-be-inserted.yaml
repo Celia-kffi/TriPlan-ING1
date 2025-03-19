@@ -1,0 +1,11 @@
+clients:
+  - nom: "Kouffi"
+    prenom: "Celia"
+    age: 20
+    nationalite: "Algerienne"
+    budget: 1500.00
+  - nom: "Idrissi"
+    prenom: "Khadija"
+    age: 20
+    nationalite: "Marocaine"
+    budget: 2000.00

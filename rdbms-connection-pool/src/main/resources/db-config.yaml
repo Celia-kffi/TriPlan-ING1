@@ -1,6 +1,21 @@
-databaseName: "pds"
-host: "127.0.0.1"
-port: 3306
-username : "root"
-password: ""
+#databaseName: "xmart_city"
+#host: "localhost"
+#port: 3307
+#username: "kouffi"
+#password: "celia"
+#poolSize: 1
+
+#databaseName: "triplan"
+#host: "172.31.253.29"
+#port: 3306
+#username: "mysql"
+#password: "Mysql2025!"
+#poolSize: 1
+
+
+databaseName: "triplan"
+host: "localhost"
+port: 3307
+username: "kouffi"
+password: "celia"
 poolSize: 1

@@ -24,15 +24,12 @@ public class MainFrontEnd extends JFrame {
 
     public static void main(String[] args) {
         try {
-            // Chargement de la configuration réseau
             final NetworkConfig networkConfig = ConfigLoader.loadConfig(NetworkConfig.class, NETWORK_CONFIG_FILE);
             logger.debug("Chargement du fichier de configuration réseau : {}", networkConfig);
 
-            // Initialisation du service client
             final ClientService clientService = new ClientService(networkConfig);
             Clients clients = clientService.selectClients();
 
-            // Lancement de l'interface graphique
             new MainFrontEnd(networkConfig);
         } catch (IOException | InterruptedException e) {
             logger.error("Erreur lors du chargement de la configuration ou du service client", e);
@@ -41,36 +38,51 @@ public class MainFrontEnd extends JFrame {
 
     public MainFrontEnd(NetworkConfig networkConfig) {
         this.networkConfig = networkConfig;
-        setTitle("Accueil - Agence de Voyage");
+        setTitle("TriPlan - Agence de Voyage");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(600, 400);
+        setSize(800, 600);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // Message de bienvenue
-        JLabel label = new JLabel("Bienvenue dans notre agence de voyage", SwingConstants.CENTER);
-        label.setFont(new Font("Arial", Font.BOLD, 16));
-        add(label, BorderLayout.CENTER);
+        // 🔹 MenuBar en haut
+        JMenuBar menuBar = new JMenuBar();
+        JMenu menuFichier = new JMenu("Fichier");
+        JMenuItem menuQuitter = new JMenuItem("Quitter");
+        menuQuitter.addActionListener(e -> System.exit(0));
+        menuFichier.add(menuQuitter);
+        menuBar.add(menuFichier);
+        setJMenuBar(menuBar);
 
-        // Création des boutons et du panneau latéral
-        JPanel panelB = new JPanel();
-        panelB.setLayout(new GridLayout(5, 1, 5, 5));
+        // 🔹 Logo centré en haut
+        JPanel panelTop = new JPanel(new BorderLayout());
+        JLabel logoLabel = new JLabel();
+        logoLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        panelTop.add(logoLabel, BorderLayout.CENTER);
+        add(panelTop, BorderLayout.NORTH);
 
-        JButton boutonClient = new JButton("Espace Client");
-        JButton boutonVoyage = new JButton("Espace Voyage");
-        JButton boutonAvis = new JButton("Avis Clients");
-        JButton boutonEmpreinte = new JButton("Empreinte Carbone");
-        JButton boutonQuitter = new JButton("Quitter");
+        // 🔹 Message de bienvenue
+        JLabel welcomeLabel = new JLabel("🌍 Découvrez le monde avec TriPlan ! ✈️", SwingConstants.CENTER);
+        welcomeLabel.setFont(new Font("Arial", Font.BOLD, 22));
+        welcomeLabel.setForeground(new Color(0, 102, 204)); // Bleu
+        add(welcomeLabel, BorderLayout.CENTER);
 
-        // Ajout des boutons au panneau
-        panelB.add(boutonClient);
-        panelB.add(boutonVoyage);
-        panelB.add(boutonAvis);
-        panelB.add(boutonEmpreinte);
-        panelB.add(boutonQuitter);
-        add(panelB, BorderLayout.WEST);
+        // 🔹 Panneau des boutons (Aligné sur le côté gauche)
+        JPanel panelButtons = new JPanel();
+        panelButtons.setLayout(new GridLayout(4, 1, 15, 15));
+        panelButtons.setBorder(BorderFactory.createEmptyBorder(50, 20, 50, 20));
 
-        // Ajout des événements sur les boutons
+        JButton boutonClient = createStyledButton("Espace Client");
+        JButton boutonAvis = createStyledButton("Avis Clients");
+        JButton boutonEmpreinte = createStyledButton("Empreinte Carbone");
+        JButton boutonQuitter = createStyledButton("Quitter", Color.RED, new Color(180, 0, 0));
+
+        panelButtons.add(boutonClient);
+        panelButtons.add(boutonAvis);
+        panelButtons.add(boutonEmpreinte);
+        panelButtons.add(boutonQuitter);
+        add(panelButtons, BorderLayout.WEST);
+
+        // 🔹 Actions des boutons
         boutonClient.addActionListener(e -> {
             try {
                 new GestionClients().setVisible(true);
@@ -81,15 +93,37 @@ public class MainFrontEnd extends JFrame {
         });
 
         boutonAvis.addActionListener(e -> new GestionAvisClients(networkConfig));
-
-        boutonEmpreinte.addActionListener(e -> {
-
-            new EmpreinteCarboneGUI();
-
-        });
-
-        boutonQuitter.addActionListener(e -> dispose());
+        boutonEmpreinte.addActionListener(e -> new EmpreinteCarboneGUI());
+        boutonQuitter.addActionListener(e -> System.exit(0));
 
         setVisible(true);
+    }
+
+    // 🔹 Création d'un bouton stylisé
+    private JButton createStyledButton(String text) {
+        return createStyledButton(text, new Color(0, 102, 204), new Color(0, 76, 153));
+    }
+
+    // 🔹 Création d'un bouton stylisé avec couleur personnalisée
+    private JButton createStyledButton(String text, Color normalColor, Color hoverColor) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("Arial", Font.BOLD, 14));
+        button.setBackground(normalColor);
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createRaisedBevelBorder());
+
+        // Effet de survol
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                button.setBackground(hoverColor);
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                button.setBackground(normalColor);
+            }
+        });
+
+        return button;
     }
 }

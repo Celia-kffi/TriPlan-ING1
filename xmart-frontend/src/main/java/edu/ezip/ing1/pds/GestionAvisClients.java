@@ -10,7 +10,6 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.util.regex.Pattern;
 
 public class GestionAvisClients extends JFrame {
 
@@ -27,22 +26,32 @@ public class GestionAvisClients extends JFrame {
 
         avisClientService = new AvisClientService(networkConfig);
 
-        JPanel panelTop = new JPanel();
+        // Barre de menu
+        JMenuBar menuBar = new JMenuBar();
+        JMenu menuFichier = new JMenu("Fichier");
+        JMenuItem menuQuitter = new JMenuItem("Quitter");
+        menuQuitter.addActionListener(e -> dispose());
+        menuFichier.add(menuQuitter);
+        menuBar.add(menuFichier);
+        setJMenuBar(menuBar);
+
+        // En-tête
+        JPanel panelTop = new JPanel(new BorderLayout());
         panelTop.setBackground(new Color(70, 130, 180));
         JLabel title = new JLabel("Gestion des Avis Clients", SwingConstants.CENTER);
         title.setFont(new Font("Serif", Font.BOLD, 24));
         title.setForeground(Color.WHITE);
-        panelTop.add(title);
+        panelTop.add(title, BorderLayout.CENTER);
         add(panelTop, BorderLayout.NORTH);
 
+        // Tableau des avis
         tableModel = new DefaultTableModel(new Object[][]{}, new String[]{"ID", "Note", "Date", "Commentaire", "ID Client"});
         tableAvis = new JTable(tableModel);
         tableAvis.setRowHeight(25);
         add(new JScrollPane(tableAvis), BorderLayout.CENTER);
 
-        JPanel panelButtons = new JPanel();
-        panelButtons.setLayout(new GridLayout(1, 4, 10, 10));
-
+        // Boutons d'action
+        JPanel panelButtons = new JPanel(new GridLayout(1, 4, 10, 10));
         JButton btnAjouter = new JButton("Ajouter Avis");
         JButton btnModifier = new JButton("Modifier Avis");
         JButton btnSupprimer = new JButton("Supprimer Avis");
@@ -52,9 +61,9 @@ public class GestionAvisClients extends JFrame {
         panelButtons.add(btnModifier);
         panelButtons.add(btnSupprimer);
         panelButtons.add(btnActualiser);
-
         add(panelButtons, BorderLayout.SOUTH);
 
+        // Actions des boutons
         btnAjouter.addActionListener(this::ajouterAvis);
         btnModifier.addActionListener(this::modifierAvis);
         btnSupprimer.addActionListener(this::supprimerAvis);
@@ -64,21 +73,22 @@ public class GestionAvisClients extends JFrame {
         setVisible(true);
     }
 
-    public static void openFrame(NetworkConfig networkConfig) {
-    }
-
     private void ajouterAvis(ActionEvent e) {
         try {
-            int note = demanderEntier("Note (1-5) :", 1, 5);
-            String date = demanderDate("Date (YYYY-MM-DD) :");
-            String commentaire = demanderTexte("Commentaire :");
-            int idClient = demanderEntier("ID Client :", 1, Integer.MAX_VALUE);
+            String[] notes = {"1", "2", "3", "4", "5"};
+            String note = (String) JOptionPane.showInputDialog(this, "Note:", "Sélectionner la note",
+                    JOptionPane.QUESTION_MESSAGE, null, notes, notes[0]);
+            if (note == null) return;
 
-            avisClientService.insertAvis(new AvisClient(0, note, date, commentaire, idClient));
+            String date = JOptionPane.showInputDialog(this, "Date (YYYY-MM-DD) :");
+            String commentaire = JOptionPane.showInputDialog(this, "Commentaire :");
+            String idClient = JOptionPane.showInputDialog(this, "ID Client :");
+
+            avisClientService.insertAvis(new AvisClient(0, Integer.parseInt(note), date, commentaire, Integer.parseInt(idClient)));
             JOptionPane.showMessageDialog(this, "Avis ajouté avec succès !");
             actualiserListe();
         } catch (Exception ex) {
-            afficherErreur("Erreur lors de l'ajout de l'avis : " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, "Erreur lors de l'ajout : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -90,27 +100,28 @@ public class GestionAvisClients extends JFrame {
         }
 
         int idAvis = (int) tableModel.getValueAt(selectedRow, 0);
-        String note = JOptionPane.showInputDialog(this, "Nouvelle note (1-5) :", tableModel.getValueAt(selectedRow, 1));
+        String note = (String) JOptionPane.showInputDialog(this, "Nouvelle note :", "Modifier la note",
+                JOptionPane.QUESTION_MESSAGE, null, new String[]{"1", "2", "3", "4", "5"}, tableModel.getValueAt(selectedRow, 1));
+        if (note == null) return;
+
         String date = JOptionPane.showInputDialog(this, "Nouvelle date (YYYY-MM-DD) :", tableModel.getValueAt(selectedRow, 2));
         String commentaire = JOptionPane.showInputDialog(this, "Nouveau commentaire :", tableModel.getValueAt(selectedRow, 3));
 
-        if (note != null && date != null && commentaire != null) {
+        if (date != null && commentaire != null) {
             try {
                 avisClientService.updateAvis(new AvisClient(idAvis, Integer.parseInt(note), date, commentaire, 0));
                 JOptionPane.showMessageDialog(this, "Avis modifié avec succès !");
                 actualiserListe();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Erreur lors de la modification de l'avis : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Erreur lors de la modification : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
 
-
-
     private void supprimerAvis(ActionEvent e) {
         int selectedRow = tableAvis.getSelectedRow();
         if (selectedRow == -1) {
-            afficherErreur("Veuillez sélectionner un avis à supprimer.");
+            JOptionPane.showMessageDialog(this, "Veuillez sélectionner un avis à supprimer.", "Erreur", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -118,13 +129,14 @@ public class GestionAvisClients extends JFrame {
         int confirm = JOptionPane.showConfirmDialog(this, "Voulez-vous vraiment supprimer cet avis ?", "Confirmation", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
             try {
-                AvisClient avisClient = new AvisClient(idAvis, 0, "", "", 0);
-                avisClientService.deleteAvis(avisClient);
-                JOptionPane.showMessageDialog(this, "Avis supprimé avec succès !");
-                actualiserListe();
-            } catch (Exception ex) {
-                afficherErreur("Erreur lors de la suppression de l'avis : " + ex.getMessage());
+                avisClientService.deleteAvis(new AvisClient(idAvis, 0, "", "", 0));
+            } catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
             }
+            JOptionPane.showMessageDialog(this, "Avis supprimé avec succès !");
+            actualiserListe();
         }
     }
 
@@ -132,51 +144,11 @@ public class GestionAvisClients extends JFrame {
         tableModel.setRowCount(0);
         try {
             AvisClients avisClients = avisClientService.selectAvisClients();
-            if (avisClients != null && avisClients.getAvisClients() != null) {
-                for (AvisClient avis : avisClients.getAvisClients()) {
-                    tableModel.addRow(new Object[]{avis.getIdAvis(), avis.getNote(), avis.getDateAvis(), avis.getCommentaires(), avis.getIdClient()});
-                }
-            } else {
-                JOptionPane.showMessageDialog(this, "Aucun avis trouvé.", "Information", JOptionPane.INFORMATION_MESSAGE);
+            for (AvisClient avis : avisClients.getAvisClients()) {
+                tableModel.addRow(new Object[]{avis.getIdAvis(), avis.getNote(), avis.getDateAvis(), avis.getCommentaires(), avis.getIdClient()});
             }
         } catch (Exception ex) {
-            afficherErreur("Erreur de rafraîchissement : " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, "Erreur de rafraîchissement : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
         }
-    }
-
-    private int demanderEntier(String message, int min, int max) {
-        while (true) {
-            String input = JOptionPane.showInputDialog(this, message);
-            if (input == null) return min; // Permet d'annuler
-            try {
-                int valeur = Integer.parseInt(input);
-                if (valeur < min || valeur > max) throw new NumberFormatException();
-                return valeur;
-            } catch (NumberFormatException ex) {
-                afficherErreur("Veuillez entrer un nombre valide entre " + min + " et " + max + ".");
-            }
-        }
-    }
-
-    private String demanderDate(String message) {
-        Pattern pattern = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
-        while (true) {
-            String input = JOptionPane.showInputDialog(this, message);
-            if (input == null) return "0000-00-00";
-            if (pattern.matcher(input).matches()) return input;
-            afficherErreur("Veuillez entrer une date au format YYYY-MM-DD.");
-        }
-    }
-
-    private String demanderTexte(String message) {
-        while (true) {
-            String input = JOptionPane.showInputDialog(this, message);
-            if (input != null && !input.trim().isEmpty()) return input;
-            afficherErreur("Ce champ ne peut pas être vide.");
-        }
-    }
-
-    private void afficherErreur(String message) {
-        JOptionPane.showMessageDialog(this, message, "Erreur", JOptionPane.ERROR_MESSAGE);
     }
 }

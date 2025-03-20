@@ -64,6 +64,9 @@ public class GestionAvisClients extends JFrame {
         setVisible(true);
     }
 
+    public static void openFrame(NetworkConfig networkConfig) {
+    }
+
     private void ajouterAvis(ActionEvent e) {
         try {
             int note = demanderEntier("Note (1-5) :", 1, 5);

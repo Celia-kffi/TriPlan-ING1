@@ -3,7 +3,6 @@ package edu.ezip.ing1.pds.backend;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import edu.ezip.commons.LoggingUtils;
 import edu.ezip.ing1.pds.business.server.XMartCityService;
 import edu.ezip.ing1.pds.commons.Request;
@@ -106,7 +105,6 @@ public class RequestHandler implements Runnable {
 
     private final byte [] getResponse(final Response response) throws JsonProcessingException {
         final ObjectMapper mapper = new ObjectMapper();
-        //mapper.enable(SerializationFeature.WRAP_ROOT_VALUE);
         return mapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(response);
     }
 

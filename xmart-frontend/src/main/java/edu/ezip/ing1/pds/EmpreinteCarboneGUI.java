@@ -50,11 +50,11 @@ public class EmpreinteCarboneGUI {
         try {
             final String networkConfigFile = "network.yaml";
             final NetworkConfig networkConfig = ConfigLoader.loadConfig(NetworkConfig.class, networkConfigFile);
-            empreinteCarboneService = new EmpreinteCarboneService(networkConfig);  // ✅ Une seule fois
+            empreinteCarboneService = new EmpreinteCarboneService(networkConfig);
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, "Erreur de configuration réseau : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
-            System.exit(1); // Quitter si la config échoue
+            System.exit(1);
         }
         frame = new JFrame("Calculateur Empreinte Carbone");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -112,14 +112,12 @@ public class EmpreinteCarboneGUI {
                 double facteurEmission = emissionFactors.get(transport);
                 double empreinte = distance * facteurEmission * 2;
 
-                // Création de l'objet EmpreinteCarbone
                 EmpreinteCarbone empreinteCarbone = new EmpreinteCarbone();
                 empreinteCarbone.setEmpreinteKgCO2((int) empreinte);  // Convertir en int
                 empreinteCarbone.setTypeDeTransport(transport);
                 empreinteCarbone.setFacteurEmission(facteurEmission);
                 empreinteCarbone.setDistance(distance);
 
-                // Appel à la nouvelle méthode publique pour insérer l'empreinte
                 empreinteCarboneService.insertEmpreinteCarbonePublic(empreinteCarbone);
 
                 JOptionPane.showMessageDialog(frame, "Empreinte carbone ajoutée avec succès !");

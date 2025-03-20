@@ -31,10 +31,10 @@ public class XMartCityService {
         DELETE_AVIS("DELETE FROM avis_clients WHERE id_avis = ?"),
         UPDATE_AVIS("UPDATE avis_clients SET note = ?, date_avis = ?, commentaires = ? WHERE id_avis = ?"),
 
-        SELECT_ALL_CLIENTS("SELECT nom, prenom, age, nationalite, budget FROM clients "),
-        INSERT_CLIENT("INSERT INTO clients (nom, prenom, age, nationalite, budget) VALUES (?, ?, ?, ?, ?)"),
-        DELETE_CLIENT("DELETE FROM clients WHERE nom = ? AND prenom = ?"),
-        UPDATE_CLIENT("UPDATE clients SET age = ?, nationalite = ?, budget = ? WHERE nom = ? AND prenom = ?"),
+        SELECT_ALL_CLIENTS("SELECT id_client ,nom, prenom, age, nationalite, budget, id_paiement FROM clients "),
+        INSERT_CLIENT("INSERT INTO clients (nom, prenom, age, nationalite, budget, id_paiement) VALUES (?, ?, ?, ?, ?, ?)"),
+        DELETE_CLIENT("DELETE FROM clients WHERE id_client = ? "),
+        UPDATE_CLIENT("UPDATE clients SET nom = ?, prenom = ?, age = ?, nationalite = ?, budget = ?, id_paiement = ? WHERE id_client = ?"),
         SELECT_ALL_EMPREINTES("SELECT id_empreinte, empreinte_kgCO2, type_de_transport, facteur_emission, distance FROM empreinte_carbone"),
         INSERT_EMPREINTE("INSERT INTO empreinte_carbone (empreinte_kgCO2, type_de_transport, facteur_emission, distance) VALUES(?,?,?,?)");
 
@@ -168,11 +168,13 @@ public class XMartCityService {
         Clients clients = new Clients();
         while (res.next()) {
             Client client = new Client();
-            client.setNom(res.getString(1));
-            client.setPrenom(res.getString(2));
-            client.setAge(res.getInt(3));
-            client.setNationalite(res.getString(4));
-            client.setBudget(res.getDouble(5));
+            client.setIdClient(res.getInt(1));
+            client.setNom(res.getString(2));
+            client.setPrenom(res.getString(3));
+            client.setAge(res.getInt(4));
+            client.setNationalite(res.getString(5));
+            client.setBudget(res.getDouble(6));
+            client.setIdPaiement(res.getString(7));
             clients.add(client);
         }
         return new Response(request.getRequestId(), objectMapper.writeValueAsString(clients));
@@ -182,13 +184,19 @@ public class XMartCityService {
         final ObjectMapper objectMapper = new ObjectMapper();
         final Client client = objectMapper.readValue(request.getRequestBody(), Client.class);
 
-        final PreparedStatement stmt = connection.prepareStatement(Queries.INSERT_CLIENT.query);
+        final PreparedStatement stmt = connection.prepareStatement(Queries.INSERT_CLIENT.query, Statement.RETURN_GENERATED_KEYS);
         stmt.setString(1, client.getNom());
         stmt.setString(2, client.getPrenom());
         stmt.setInt(3, client.getAge());
         stmt.setString(4, client.getNationalite());
         stmt.setDouble(5, client.getBudget());
+        stmt.setString(6, client.getIdPaiement());
         stmt.executeUpdate();
+
+        ResultSet generatedKeys = stmt.getGeneratedKeys();
+        if (generatedKeys.next()) {
+            client.setIdClient(generatedKeys.getInt(1));
+        }
 
         return new Response(request.getRequestId(), objectMapper.writeValueAsString(client));
     }
@@ -197,8 +205,7 @@ public class XMartCityService {
         final Client client = objectMapper.readValue(request.getRequestBody(), Client.class);
 
         final PreparedStatement stmt = connection.prepareStatement(Queries.DELETE_CLIENT.query);
-        stmt.setString(1, client.getNom());
-        stmt.setString(2, client.getPrenom());
+        stmt.setInt(1, client.getIdClient());
         int rowsAffected = stmt.executeUpdate();
 
         if (rowsAffected > 0) {
@@ -213,11 +220,13 @@ public class XMartCityService {
         final Client client = objectMapper.readValue(request.getRequestBody(), Client.class);
 
         final PreparedStatement stmt = connection.prepareStatement(Queries.UPDATE_CLIENT.query);
-        stmt.setInt(1, client.getAge());
-        stmt.setString(2, client.getNationalite());
-        stmt.setDouble(3, client.getBudget());
-        stmt.setString(4, client.getNom());
-        stmt.setString(5, client.getPrenom());
+        stmt.setString(1, client.getNom());
+        stmt.setString(2, client.getPrenom());
+        stmt.setInt(3, client.getAge());
+        stmt.setString(4, client.getNationalite());
+        stmt.setDouble(5, client.getBudget());
+        stmt.setString(6, client.getIdPaiement());
+        stmt.setInt(7, client.getIdClient());
         int rowsAffected = stmt.executeUpdate();
 
         if (rowsAffected > 0) {
@@ -226,6 +235,7 @@ public class XMartCityService {
             return new Response(request.getRequestId(), "Client introuvable ou aucune modification effectuée.");
         }
     }
+
 
     private Response insertEmpreinte(final Request request, final Connection connection) throws SQLException, IOException {
         final ObjectMapper objectMapper = new ObjectMapper();

@@ -84,7 +84,7 @@ public class MainFrontEnd extends JFrame {
 
         boutonEmpreinte.addActionListener(e -> {
 
-                new EmpreinteCarboneGUI();
+            new EmpreinteCarboneGUI();
 
         });
 

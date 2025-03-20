@@ -44,7 +44,7 @@ public class GestionClients extends JFrame {
         lblListe.setFont(new Font("Serif", Font.BOLD, 16));
         panelCenter.add(lblListe, BorderLayout.NORTH);
 
-        tableModel = new DefaultTableModel(new Object[][]{}, new String[]{"Nom", "Prénom", "Age", "Nationalité", "Budget"});
+        tableModel = new DefaultTableModel(new Object[][]{}, new String[]{"ID Client","Nom", "Prenom", "Age", "Nationalite", "Budget", "ID Paiement"});
         tableClients = new JTable(tableModel);
         JScrollPane scrollPane = new JScrollPane(tableClients);
         panelCenter.add(scrollPane, BorderLayout.CENTER);
@@ -85,14 +85,15 @@ public class GestionClients extends JFrame {
 
     private void ajouterClient(ActionEvent e) {
         String nom = JOptionPane.showInputDialog(this, "Nom :");
-        String prenom = JOptionPane.showInputDialog(this, "Prénom :");
+        String prenom = JOptionPane.showInputDialog(this, "Prenom :");
         String age = JOptionPane.showInputDialog(this, "Age :");
-        String nationalite = JOptionPane.showInputDialog(this, "Nationalité :");
+        String nationalite = JOptionPane.showInputDialog(this, "Nationalite :");
         String budget = JOptionPane.showInputDialog(this, "Budget :");
+        String idPaiement = JOptionPane.showInputDialog(this, "ID Paiement :");
 
         if (nom != null && prenom != null && age != null && nationalite != null && budget != null) {
             try {
-                Client client = new Client(nom, prenom, Integer.parseInt(age), nationalite, Double.parseDouble(budget));
+                Client client = new Client(nom, prenom, Integer.parseInt(age), nationalite, Double.parseDouble(budget), idPaiement);
                 clientService.insertClient(client);
                 JOptionPane.showMessageDialog(this, "Client ajouté avec succès !");
                 actualiserListe(null);
@@ -106,11 +107,12 @@ public class GestionClients extends JFrame {
     private void supprimerClient(ActionEvent e) {
         int selectedRow = tableClients.getSelectedRow();
         if (selectedRow != -1) {
-            String nom = (String) tableModel.getValueAt(selectedRow, 0);
-            String prenom = (String) tableModel.getValueAt(selectedRow, 1);
+            int idClient = Integer.parseInt(tableModel.getValueAt(selectedRow, 0).toString());
+
+
 
             try {
-                Client client = new Client(nom, prenom, 0, "", 0.0);
+                Client client = new Client(idClient, "", "", 0, "", 0.0, "");
                 clientService.deleteClient(client);
                 actualiserListe(null);
                 JOptionPane.showMessageDialog(this, "Client supprimé avec succès !");
@@ -128,11 +130,13 @@ public class GestionClients extends JFrame {
             if (clients != null) {
                 for (Client client : clients.getClients()) {
                     tableModel.addRow(new Object[]{
+                            client.getIdClient(),
                             client.getNom(),
                             client.getPrenom(),
                             client.getAge(),
                             client.getNationalite(),
-                            client.getBudget()
+                            client.getBudget(),
+                            client.getIdPaiement()
                     });
                 }
             }
@@ -144,15 +148,18 @@ public class GestionClients extends JFrame {
     private void modifierClient(ActionEvent e) {
         int selectedRow = tableClients.getSelectedRow();
         if (selectedRow != -1) {
-            String nom = (String) tableModel.getValueAt(selectedRow, 0);
-            String prenom = (String) tableModel.getValueAt(selectedRow, 1);
-            String age = JOptionPane.showInputDialog(this, "Nouvel age :", tableModel.getValueAt(selectedRow, 2));
-            String nationalite = JOptionPane.showInputDialog(this, "Nouvelle nationalité :", tableModel.getValueAt(selectedRow, 3));
-            String budget = JOptionPane.showInputDialog(this, "Nouveau budget :", tableModel.getValueAt(selectedRow, 4));
+            int idClient = (int) tableModel.getValueAt(selectedRow, 0);
+            String nom = (String) tableModel.getValueAt(selectedRow, 1);
+            String prenom = (String) tableModel.getValueAt(selectedRow, 2);
+            String age = JOptionPane.showInputDialog(this, "Nouvel age :", tableModel.getValueAt(selectedRow, 3));
+            String nationalite = JOptionPane.showInputDialog(this, "Nouvelle nationalité :", tableModel.getValueAt(selectedRow, 4));
+            String budget = JOptionPane.showInputDialog(this, "Nouveau budget :", tableModel.getValueAt(selectedRow, 5));
+            String idPaiement = JOptionPane.showInputDialog(this, "Nouvel ID Paiement :", tableModel.getValueAt(selectedRow, 6));
+
 
             if (age != null && nationalite != null && budget != null) {
                 try {
-                    Client client = new Client(nom, prenom, Integer.parseInt(age), nationalite, Double.parseDouble(budget));
+                    Client client = new Client(idClient,nom, prenom, Integer.parseInt(age), nationalite, Double.parseDouble(budget), idPaiement);
                     clientService.updateClient(client);
                     JOptionPane.showMessageDialog(this, "Client modifié avec succès !");
                     actualiserListe(null);

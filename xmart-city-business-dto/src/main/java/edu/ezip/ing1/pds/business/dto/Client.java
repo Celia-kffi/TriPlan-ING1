@@ -10,35 +10,49 @@ import java.sql.SQLException;
 
 @JsonRootName(value = "client")
 public class Client {
-   // private int idClient;
+    private int idClient;
     private String nom;
     private String prenom;
     private int age;
     private String nationalite;
     private double budget;
+    private String idPaiement;
 
 
     public Client() {
     }
-
-    public final Client build(final ResultSet resultSet)
-            throws SQLException, NoSuchFieldException, IllegalAccessException {
-        setFieldsFromResulset(resultSet, "nom", "prenom", "age", "nationalite", "budget", "idClient");
-        return this;
-    }
-
-    public final PreparedStatement build(PreparedStatement preparedStatement)
-            throws SQLException, NoSuchFieldException, IllegalAccessException {
-        return buildPreparedStatement(preparedStatement, nom, prenom, String.valueOf(age), nationalite, String.valueOf(budget));
-    }
-
-    public Client(String nom, String prenom, int age, String nationalite, double budget) {
+    public Client( int idClient,String nom, String prenom, int age, String nationalite, double budget, String idPaiement) {
+        this.idClient = idClient;
         this.nom = nom;
         this.prenom = prenom;
         this.age = age;
         this.nationalite = nationalite;
         this.budget = budget;
+        this.idPaiement = idPaiement;
     }
+
+    public Client(String nom, String prenom, int age, String nationalite, double budget, String idPaiement) {
+        this.nom = nom;
+        this.prenom = prenom;
+        this.age = age;
+        this.nationalite = nationalite;
+        this.budget = budget;
+        this.idPaiement = idPaiement;
+    }
+
+
+    public final Client build(final ResultSet resultSet)
+            throws SQLException, NoSuchFieldException, IllegalAccessException {
+        setFieldsFromResulset(resultSet, "idClient","nom", "prenom", "age", "nationalite", "budget", "idPaiement");
+        return this;
+    }
+
+    public final PreparedStatement build(PreparedStatement preparedStatement)
+            throws SQLException, NoSuchFieldException, IllegalAccessException {
+        return buildPreparedStatement(preparedStatement, nom, prenom, String.valueOf(age), nationalite, String.valueOf(budget),idPaiement);
+    }
+
+
 
 
 
@@ -62,14 +76,17 @@ public class Client {
         return budget;
     }
 
-    /*public int getIdClient() {
+    public int getIdClient() {
         return idClient;
-    }*/
+    }
+    public String getIdPaiement(){
+        return idPaiement;
+    }
 
-   /* @JsonProperty("id")
+    @JsonProperty("id")
     public void setIdClient(int idClient) {
         this.idClient = idClient;
-    }*/
+    }
 
     @JsonProperty("nom")
     public void setNom(String nom) {
@@ -94,6 +111,10 @@ public class Client {
     @JsonProperty("budget")
     public void setBudget(double budget) {
         this.budget = budget;
+    }
+    @JsonProperty("id_paiement")
+    public void setIdPaiement(String idPaiement) {
+        this.idPaiement = idPaiement;
     }
 
 
@@ -122,11 +143,13 @@ public class Client {
     @Override
     public String toString() {
         return "Client{" +
-                "nom='" + nom + '\'' +
+                "idClient=" + idClient +
+                ", nom='" + nom + '\'' +
                 ", prenom='" + prenom + '\'' +
                 ", age=" + age +
                 ", nationalite='" + nationalite + '\'' +
                 ", budget=" + budget +
+                ", idPaiement='" + idPaiement + '\'' +
                 '}';
     }
 }

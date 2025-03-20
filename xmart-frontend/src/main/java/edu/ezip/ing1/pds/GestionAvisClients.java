@@ -44,13 +44,13 @@ public class GestionAvisClients extends JFrame {
         panelTop.add(title, BorderLayout.CENTER);
         add(panelTop, BorderLayout.NORTH);
 
-        // Tableau des avis
+
         tableModel = new DefaultTableModel(new Object[][]{}, new String[]{"ID", "Note", "Date", "Commentaire", "ID Client"});
         tableAvis = new JTable(tableModel);
         tableAvis.setRowHeight(25);
         add(new JScrollPane(tableAvis), BorderLayout.CENTER);
 
-        // Boutons d'action
+
         JPanel panelButtons = new JPanel(new GridLayout(1, 4, 10, 10));
         JButton btnAjouter = new JButton("Ajouter Avis");
         JButton btnModifier = new JButton("Modifier Avis");
@@ -63,7 +63,7 @@ public class GestionAvisClients extends JFrame {
         panelButtons.add(btnActualiser);
         add(panelButtons, BorderLayout.SOUTH);
 
-        // Actions des boutons
+
         btnAjouter.addActionListener(this::ajouterAvis);
         btnModifier.addActionListener(this::modifierAvis);
         btnSupprimer.addActionListener(this::supprimerAvis);

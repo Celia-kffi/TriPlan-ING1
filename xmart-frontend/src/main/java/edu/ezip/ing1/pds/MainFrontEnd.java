@@ -92,7 +92,9 @@ public class MainFrontEnd extends JFrame {
             }
         });
 
-        boutonAvis.addActionListener(e -> new GestionAvisClients(networkConfig));
+        boutonAvis.addActionListener(e ->
+                new GestionAvisClients(networkConfig)
+        );
         boutonEmpreinte.addActionListener(e -> new EmpreinteCarboneGUI());
         boutonQuitter.addActionListener(e -> System.exit(0));
 

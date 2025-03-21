@@ -38,6 +38,8 @@ public class GestionAvisClients extends JFrame {
         // En-tête
         JPanel panelTop = new JPanel(new BorderLayout());
         panelTop.setBackground(new Color(70, 130, 180));
+
+
         JLabel title = new JLabel("Gestion des Avis Clients", SwingConstants.CENTER);
         title.setFont(new Font("Serif", Font.BOLD, 24));
         title.setForeground(Color.WHITE);
@@ -63,6 +65,18 @@ public class GestionAvisClients extends JFrame {
         panelButtons.add(btnActualiser);
         add(panelButtons, BorderLayout.SOUTH);
 
+
+        btnAjouter.setBackground(new Color(39, 174, 96));
+        btnAjouter.setForeground(Color.WHITE);
+
+        btnSupprimer.setBackground(new Color(192, 57, 43));
+        btnSupprimer.setForeground(Color.WHITE);
+
+        btnModifier.setBackground(new Color(243, 156, 18));
+        btnModifier.setForeground(Color.WHITE);
+
+        btnActualiser.setBackground(new Color(41, 128, 185));
+        btnActualiser.setForeground(Color.WHITE);
 
         btnAjouter.addActionListener(this::ajouterAvis);
         btnModifier.addActionListener(this::modifierAvis);

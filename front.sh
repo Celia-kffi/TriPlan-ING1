@@ -1,7 +1,7 @@
 #!/bin/bash
 
-cd xmart-frontend
-mvn exec:java -Dexec.mainClass="edu.ezip.ing1.pds.MainFrontEnd"
+cd xmart-frontend/target
+java -jar "xmart-frontend-1.0-SNAPSHOT-jar-with-dependencies.jar"
 
 if [ $? -eq 0 ]; then
     echo "lancement went successfully."

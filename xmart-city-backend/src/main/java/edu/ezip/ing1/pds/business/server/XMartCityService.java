@@ -18,6 +18,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.ezip.ing1.pds.commons.Request;
 import edu.ezip.ing1.pds.commons.Response;
+import java.util.ArrayList;
+
 
 public class XMartCityService {
 
@@ -31,10 +33,11 @@ public class XMartCityService {
         INSERT_CLIENT("INSERT INTO clients (nom, prenom, age, nationalite, budget, id_paiement) VALUES (?, ?, ?, ?, ?, ?)"),
         DELETE_CLIENT("DELETE FROM clients WHERE id_client = ? "),
         UPDATE_CLIENT("UPDATE clients SET nom = ?, prenom = ?, age = ?, nationalite = ?, budget = ?, id_paiement = ? WHERE id_client = ?"),
-        SELECT_ALL_EMPREINTES("SELECT id_empreinte, empreinte_kgCO2, type_de_transport, facteur_emission, distance FROM empreinte_carbone"),
-        INSERT_EMPREINTE("INSERT INTO empreinte_carbone (empreinte_kgCO2, type_de_transport, facteur_emission, distance) VALUES (?, ?, ?, ?)"),
+        SELECT_ALL_EMPREINTES("SELECT id_empreinte, empreinte_kgCO2 FROM empreinte_carbone"),
+        INSERT_EMPREINTE("INSERT INTO empreinte_carbone (empreinte_kgCO2) VALUES (?)"),
         DELETE_EMPREINTE("DELETE FROM empreinte_carbone WHERE id_empreinte = ?"),
-        UPDATE_EMPREINTE("UPDATE empreinte_carbone SET empreinte_kgCO2 = ?, type_de_transport = ?, facteur_emission = ?, distance = ? WHERE id_empreinte = ?");
+        SELECT_ALL_TRANSPORTS("SELECT id_transport, type_transport, facteur_emission FROM moyen_transports"),
+        INSERT_TRANSPORT("INSERT INTO moyen_transports (type_transport, description) VALUES (?, ?)");
 
         private final String query;
 
@@ -77,17 +80,20 @@ public class XMartCityService {
                 response=updateClient(request,connection);
                 break;
             case SELECT_ALL_EMPREINTES:
-                response = selectAllEmpreintes(request, connection);
+                response = SelectAllEmpreintes(request, connection);
                 break;
             case INSERT_EMPREINTE:
-                response = insertEmpreinte(request, connection);
+                response = InsertEmpreinte(request, connection);
                 break;
-            case DELETE_EMPREINTE:
-                response = deleteEmpreinte(request, connection);
+            case SELECT_ALL_TRANSPORTS:
+                response = SelectAllTransports(request, connection);
                 break;
-            case UPDATE_EMPREINTE:
-                response = updateEmpreinte(request, connection);
+            case INSERT_TRANSPORT:
+                response = InsertTransport(request, connection);
                 break;
+            /*case DELETE_EMPREINTE:
+                response = DeleteEmpreinte(request, connection);
+                break;*/
             default:
                 break;
         }
@@ -199,7 +205,7 @@ public class XMartCityService {
             return new Response(request.getRequestId(), "Client introuvable ou aucune modification effectuée.");
         }
     }
-
+/*
     private Response insertEmpreinte(final Request request, final Connection connection) throws SQLException, IOException {
         final ObjectMapper objectMapper = new ObjectMapper();
         final EmpreinteCarbone empreinte = objectMapper.readValue(request.getRequestBody(), EmpreinteCarbone.class);
@@ -263,5 +269,127 @@ public class XMartCityService {
 
         return new Response(request.getRequestId(), "Empreinte mise à jour avec succès");
     }
+private Response selectMoyenTransports(final Request request, final Connection connection) throws SQLException, JsonProcessingException {
+    final ObjectMapper objectMapper = new ObjectMapper();
+    final Statement stmt = connection.createStatement();
+    final ResultSet res = stmt.executeQuery(Queries.SELECT_MOYEN_TRANSPORTS.query);
+
+    ArrayList<MoyenTransport> transportsList = new ArrayList<>();
+
+    while (res.next()) {
+        MoyenTransport transport = new MoyenTransport();
+        transport.setIdMoyenDestination(res.getInt("id_moyen_destination"));
+        transport.setTypeTransport(res.getString("type_transports"));
+        transportsList.add(transport);
+    }
+
+
+    return new Response(request.getRequestId(), objectMapper.writeValueAsString(transportsList));
+}
+
+
+    private Response getFacteurEmission(final Request request, final Connection connection) throws SQLException, IOException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final int idMoyenDestination = objectMapper.readValue(request.getRequestBody(), Integer.class);
+
+        final PreparedStatement stmt = connection.prepareStatement(Queries.GET_FACTEUR_EMISSION.query);
+        stmt.setInt(1, idMoyenDestination);
+
+        final ResultSet res = stmt.executeQuery();
+
+        if (res.next()) {
+            double facteurEmission = res.getDouble("facteur_emission");
+            return new Response(request.getRequestId(), objectMapper.writeValueAsString(facteurEmission));
+        } else {
+            return new Response(request.getRequestId(), "Aucun facteur d'émission trouvé.");
+        }
+    }
+*/
+private Response InsertEmpreinte(final Request request, final Connection connection) throws SQLException, IOException {
+    final ObjectMapper objectMapper = new ObjectMapper();
+    final EmpreinteCarbone empreinteCarbone = objectMapper.readValue(request.getRequestBody(), EmpreinteCarbone.class);
+
+    // 1. Vérifier la connexion
+    if (connection.isClosed()) {
+        logger.error("Connexion fermée !");
+        return new Response(request.getRequestId(), "{\"error\": \"Database connection closed\"}");
+    }
+
+    // 2. Journaliser les données reçues
+    logger.debug("Tentative d'insertion : {}", empreinteCarbone);
+
+    // 3. Exécuter la requête
+    try (PreparedStatement stmt = connection.prepareStatement(Queries.INSERT_EMPREINTE.query, Statement.RETURN_GENERATED_KEYS)) {
+        stmt.setDouble(1, empreinteCarbone.getEmpreinteKgCO2());
+        // Autres champs (type_de_transport, facteur_emission, distance) ne sont plus nécessaires ici
+
+        int affectedRows = stmt.executeUpdate();
+
+        // 4. Récupérer l'ID généré
+        if (affectedRows > 0) {
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    empreinteCarbone.setIdEmpreinte(generatedKeys.getInt(1));
+                }
+            }
+        }
+
+        logger.info("Empreinte carbone insérée avec succès : ID {}", empreinteCarbone.getIdEmpreinte());
+        return new Response(request.getRequestId(), objectMapper.writeValueAsString(empreinteCarbone));
+    } catch (SQLException e) {
+        logger.error("Erreur SQL lors de l'insertion : ", e);
+        return new Response(request.getRequestId(), "{\"error\": \"" + e.getMessage() + "\"}");
+    }
+}
+
+    private Response SelectAllEmpreintes(final Request request, final Connection connection) throws SQLException, JsonProcessingException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final Statement stmt = connection.createStatement();
+        final ResultSet res = stmt.executeQuery(Queries.SELECT_ALL_EMPREINTES.query);
+        EmpreintesCarbone empreintesCarbone = new EmpreintesCarbone();
+        while (res.next()) {
+            EmpreinteCarbone empreinteCarbone = new EmpreinteCarbone();
+            empreinteCarbone.setIdEmpreinte(res.getInt("id_empreinte"));
+            empreinteCarbone.setEmpreinteKgCO2(res.getDouble("empreinte_kgCO2"));
+            // Le type de transport et la distance ne sont plus gérés dans cette classe
+
+            empreintesCarbone.add(empreinteCarbone);
+        }
+        logger.info("Récupération de toutes les empreintes carbone : {} éléments trouvés", empreintesCarbone.getEmpreintesCarbone().size());
+        return new Response(request.getRequestId(), objectMapper.writeValueAsString(empreintesCarbone));
+    }
+
+    private Response InsertTransport(final Request request, final Connection connection) throws SQLException, IOException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final MoyenTransport moyenTransport = objectMapper.readValue(request.getRequestBody(), MoyenTransport.class);
+        final PreparedStatement stmt = connection.prepareStatement(Queries.INSERT_TRANSPORT.query);
+        stmt.setString(1, moyenTransport.getTypeTransport());
+        stmt.setDouble(2, moyenTransport.getFacteurEmission()); // Ajout du facteur d'émission
+        stmt.executeUpdate();
+
+        final Statement stmt2 = connection.createStatement();
+        final ResultSet res = stmt2.executeQuery("SELECT LAST_INSERT_ID()");
+        res.next();
+        moyenTransport.setIdMoyenDestination(res.getInt(1)); // Mise à jour avec l'ID du moyen de transport
+        logger.info("Insertion d'un nouveau moyen de transport : {}", moyenTransport);
+        return new Response(request.getRequestId(), objectMapper.writeValueAsString(moyenTransport));
+    }
+
+    private Response SelectAllTransports(final Request request, final Connection connection) throws SQLException, JsonProcessingException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final Statement stmt = connection.createStatement();
+        final ResultSet res = stmt.executeQuery(Queries.SELECT_ALL_TRANSPORTS.query);
+        MoyenTransports moyensTransports = new MoyenTransports();
+        while (res.next()) {
+            MoyenTransport moyenTransport = new MoyenTransport();
+            moyenTransport.setIdMoyenDestination(res.getInt("id_transport"));
+            moyenTransport.setTypeTransport(res.getString("type_transport"));
+            moyenTransport.setFacteurEmission(res.getDouble("facteur_emission")); // Gestion du facteur d'émission
+            moyensTransports.add(moyenTransport);
+        }
+        logger.info("Récupération de tous les moyens de transport : {} éléments trouvés", moyensTransports.getMoyensDeTransport().size());
+        return new Response(request.getRequestId(), objectMapper.writeValueAsString(moyensTransports));
+    }
 
 }
+

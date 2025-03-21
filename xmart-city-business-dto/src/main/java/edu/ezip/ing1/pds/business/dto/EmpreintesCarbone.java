@@ -2,6 +2,7 @@ package edu.ezip.ing1.pds.business.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -19,16 +20,15 @@ public class EmpreintesCarbone {
         this.empreintesCarbone = empreintesCarbone;
     }
 
-    public final EmpreintesCarbone add(final EmpreinteCarbone empreinteCarbone) {
+    public EmpreintesCarbone add(EmpreinteCarbone empreinteCarbone) {
         empreintesCarbone.add(empreinteCarbone);
         return this;
     }
 
     @Override
     public String toString() {
-        return "EmpreintesCarbone{" +
+        return "EmpreinteCarbones{" +
                 "empreintesCarbone=" + empreintesCarbone +
                 '}';
     }
 }
-

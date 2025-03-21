@@ -21,10 +21,13 @@ public class GestionClients extends JFrame {
 
     public GestionClients() throws IOException {
         setTitle("TriPlan - Gestion des Clients");
-        setSize(600, 400);
+        setSize(800, 600);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
+
+        Color backgroundColor = new Color(235, 229, 210);
+        getContentPane().setBackground(backgroundColor);
 
         try {
             final String networkConfigFile = "network.yaml";
@@ -36,32 +39,53 @@ public class GestionClients extends JFrame {
         }
 
         JLabel title = new JLabel("TriPlan", SwingConstants.CENTER);
-        title.setFont(new Font("Serif", Font.BOLD, 20));
+        title.setFont(new Font("Serif", Font.BOLD, 25));
         add(title, BorderLayout.NORTH);
 
         JPanel panelCenter = new JPanel(new BorderLayout());
         JLabel lblListe = new JLabel("Liste des clients :");
         lblListe.setFont(new Font("Serif", Font.BOLD, 16));
+        lblListe.setForeground(new Color(40, 40, 100));
+        lblListe.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         panelCenter.add(lblListe, BorderLayout.NORTH);
 
         tableModel = new DefaultTableModel(new Object[][]{}, new String[]{"ID Client","Nom", "Prenom", "Age", "Nationalite", "Budget", "ID Paiement"});
         tableClients = new JTable(tableModel);
+        tableClients.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
+        tableClients.getTableHeader().setBackground(new Color(220, 220, 220));
+        tableClients.setBackground(Color.WHITE);
+        tableClients.setFillsViewportHeight(true);
         JScrollPane scrollPane = new JScrollPane(tableClients);
         panelCenter.add(scrollPane, BorderLayout.CENTER);
         add(panelCenter, BorderLayout.CENTER);
 
         JPanel panelButtons = new JPanel();
         panelButtons.setLayout(new BoxLayout(panelButtons, BoxLayout.Y_AXIS));
+        panelButtons.setBackground(backgroundColor);
+        panelButtons.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         JButton btnAjouter = new JButton("Ajouter un client");
         JButton btnSupprimer = new JButton("Supprimer un client");
         JButton btnActualiser = new JButton("Actualiser la liste");
         JButton btnModifier = new JButton("Modifier un client");
 
+        btnAjouter.setBackground(new Color(39, 174, 96));
+        btnAjouter.setForeground(Color.WHITE);
+
+        btnSupprimer.setBackground(new Color(192, 57, 43));
+        btnSupprimer.setForeground(Color.WHITE);
+
+        btnModifier.setBackground(new Color(243, 156, 18));
+        btnModifier.setForeground(Color.WHITE);
+
+        btnActualiser.setBackground(new Color(41, 128, 185));
+        btnActualiser.setForeground(Color.WHITE);
+
         btnAjouter.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnSupprimer.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnActualiser.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnModifier.setAlignmentX(Component.CENTER_ALIGNMENT);
+
 
         panelButtons.add(Box.createVerticalStrut(10));
         panelButtons.add(btnAjouter);

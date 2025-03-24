@@ -1,17 +1,19 @@
 package edu.ezip.ing1.pds.requests;
-import edu.ezip.ing1.pds.business.dto.EmpreinteCarbone;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.ezip.ing1.pds.business.dto.EmpreintesCarbone;
+import edu.ezip.ing1.pds.business.dto.EmpreinteCarbone;
 import edu.ezip.ing1.pds.client.commons.ClientRequest;
 import edu.ezip.ing1.pds.client.commons.NetworkConfig;
 import edu.ezip.ing1.pds.commons.Request;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class SelectAllEmpreinteCarboneClientRequest extends ClientRequest<Object, EmpreintesCarbone> {
+public class SelectAllEmpreinteCarboneClientRequest extends ClientRequest<Object, Integer> {
+
+    private static final Logger logger = LoggerFactory.getLogger(SelectAllEmpreinteCarboneClientRequest.class);
 
     public SelectAllEmpreinteCarboneClientRequest(
             NetworkConfig networkConfig, int myBirthDate, Request request, Object info, byte[] bytes)
@@ -20,20 +22,26 @@ public class SelectAllEmpreinteCarboneClientRequest extends ClientRequest<Object
     }
 
     @Override
-    public EmpreintesCarbone readResult(String body) throws IOException {
+    public Integer readResult(String body) throws IOException {
         final ObjectMapper mapper = new ObjectMapper();
-        final EmpreintesCarbone empreintesCarbone = mapper.readValue(body, EmpreintesCarbone.class);
-        return empreintesCarbone;
-    }
+        logger.debug("Body reçu : {}", body); // Log du body reçu
 
-    // Méthode ajoutée pour récupérer les types de transport distincts
-    public static List<String> getTypesDeTransport(EmpreintesCarbone empreintesCarbone) {
-        List<String> typesDeTransport = new ArrayList<>();
-        for (EmpreinteCarbone empreinte : empreintesCarbone.getEmpreintesCarbone()) {
-            if (!typesDeTransport.contains(empreinte.getTypeDeTransport())) {
-                typesDeTransport.add(empreinte.getTypeDeTransport());
-            }
+        if (body == null || body.isEmpty()) {
+            logger.error("Body reçu est null ou vide.");
+            return null;
         }
-        return typesDeTransport;
+
+
+        EmpreintesCarbone empreintesCarbone = mapper.readValue(body, EmpreintesCarbone.class);
+        logger.debug("EmpreintesCarbone désérialisées : {}", empreintesCarbone);
+
+
+        if (!empreintesCarbone.getEmpreintesCarbone().isEmpty()) {
+            EmpreinteCarbone premier = empreintesCarbone.getEmpreintesCarbone().iterator().next();
+            return premier.getIdEmpreinte();
+        }
+
+        logger.error("Aucune empreinte carbone trouvée.");
+        return null;
     }
 }

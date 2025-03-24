@@ -6,7 +6,6 @@ import edu.ezip.ing1.pds.client.commons.NetworkConfig;
 import edu.ezip.ing1.pds.services.AvisClientService;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -16,7 +15,7 @@ public class GestionAvisClients extends JFrame {
 
     private DefaultTableModel tableModel;
     private JTable tableAvis;
-    private AvisClientService avisClientService;
+    private final AvisClientService avisClientService;
 
     public GestionAvisClients(NetworkConfig networkConfig) {
         setTitle("Gestion des Avis Clients");
@@ -27,101 +26,143 @@ public class GestionAvisClients extends JFrame {
 
         avisClientService = new AvisClientService(networkConfig);
 
-        JPanel panelTop = new JPanel();
+        // Barre de menu
+        JMenuBar menuBar = new JMenuBar();
+        JMenu menuFichier = new JMenu("Fichier");
+        JMenuItem menuQuitter = new JMenuItem("Quitter");
+        menuQuitter.addActionListener(e -> dispose());
+        menuFichier.add(menuQuitter);
+        menuBar.add(menuFichier);
+        setJMenuBar(menuBar);
+
+        // En-tête
+        JPanel panelTop = new JPanel(new BorderLayout());
         panelTop.setBackground(new Color(70, 130, 180));
-        panelTop.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+
         JLabel title = new JLabel("Gestion des Avis Clients", SwingConstants.CENTER);
         title.setFont(new Font("Serif", Font.BOLD, 24));
         title.setForeground(Color.WHITE);
-        panelTop.add(title);
+        panelTop.add(title, BorderLayout.CENTER);
         add(panelTop, BorderLayout.NORTH);
+
 
         tableModel = new DefaultTableModel(new Object[][]{}, new String[]{"ID", "Note", "Date", "Commentaire", "ID Client"});
         tableAvis = new JTable(tableModel);
-        tableAvis.setFont(new Font("SansSerif", Font.PLAIN, 14));
         tableAvis.setRowHeight(25);
         add(new JScrollPane(tableAvis), BorderLayout.CENTER);
 
-        JPanel panelButtons = new JPanel();
-        panelButtons.setLayout(new GridLayout(1, 3, 10, 10));
-        panelButtons.setBorder(new EmptyBorder(10, 10, 10, 10));
 
+        JPanel panelButtons = new JPanel(new GridLayout(1, 4, 10, 10));
         JButton btnAjouter = new JButton("Ajouter Avis");
-        btnAjouter.setFont(new Font("SansSerif", Font.BOLD, 14));
-        btnAjouter.setIcon(new ImageIcon("icons/add.png"));
-        btnAjouter.setBackground(new Color(50, 205, 50));
-        btnAjouter.setForeground(Color.WHITE);
-
+        JButton btnModifier = new JButton("Modifier Avis");
+        JButton btnSupprimer = new JButton("Supprimer Avis");
         JButton btnActualiser = new JButton("Actualiser Liste");
-        btnActualiser.setFont(new Font("SansSerif", Font.BOLD, 14));
-        btnActualiser.setIcon(new ImageIcon("icons/refresh.png"));
-        btnActualiser.setBackground(new Color(30, 144, 255));
-        btnActualiser.setForeground(Color.WHITE);
 
         panelButtons.add(btnAjouter);
+        panelButtons.add(btnModifier);
+        panelButtons.add(btnSupprimer);
         panelButtons.add(btnActualiser);
-
         add(panelButtons, BorderLayout.SOUTH);
 
-        btnAjouter.addActionListener(this::ajouterAvis);
-        btnActualiser.addActionListener(this::actualiserListe);
 
-        actualiserListe(null);
+        btnAjouter.setBackground(new Color(39, 174, 96));
+        btnAjouter.setForeground(Color.WHITE);
+
+        btnSupprimer.setBackground(new Color(192, 57, 43));
+        btnSupprimer.setForeground(Color.WHITE);
+
+        btnModifier.setBackground(new Color(243, 156, 18));
+        btnModifier.setForeground(Color.WHITE);
+
+        btnActualiser.setBackground(new Color(41, 128, 185));
+        btnActualiser.setForeground(Color.WHITE);
+
+        btnAjouter.addActionListener(this::ajouterAvis);
+        btnModifier.addActionListener(this::modifierAvis);
+        btnSupprimer.addActionListener(this::supprimerAvis);
+        btnActualiser.addActionListener(e -> actualiserListe());
+
+        actualiserListe();
         setVisible(true);
     }
 
     private void ajouterAvis(ActionEvent e) {
-        JPanel panel = new JPanel(new GridLayout(4, 2, 10, 10));
+        try {
+            String[] notes = {"1", "2", "3", "4", "5"};
+            String note = (String) JOptionPane.showInputDialog(this, "Note:", "Sélectionner la note",
+                    JOptionPane.QUESTION_MESSAGE, null, notes, notes[0]);
+            if (note == null) return;
 
-        JTextField fieldNote = new JTextField();
-        JTextField fieldDate = new JTextField();
-        JTextField fieldCommentaire = new JTextField();
-        JTextField fieldIdClient = new JTextField();
+            String date = JOptionPane.showInputDialog(this, "Date (YYYY-MM-DD) :");
+            String commentaire = JOptionPane.showInputDialog(this, "Commentaire :");
+            String idClient = JOptionPane.showInputDialog(this, "ID Client :");
 
-        panel.add(new JLabel("Note (1-5):"));
-        panel.add(fieldNote);
-        panel.add(new JLabel("Date (YYYY-MM-DD):"));
-        panel.add(fieldDate);
-        panel.add(new JLabel("Commentaire:"));
-        panel.add(fieldCommentaire);
-        panel.add(new JLabel("ID Client:"));
-        panel.add(fieldIdClient);
+            avisClientService.insertAvis(new AvisClient(0, Integer.parseInt(note), date, commentaire, Integer.parseInt(idClient)));
+            JOptionPane.showMessageDialog(this, "Avis ajouté avec succès !");
+            actualiserListe();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Erreur lors de l'ajout : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+        }
+    }
 
-        int result = JOptionPane.showConfirmDialog(this, panel, "Ajouter un Avis", JOptionPane.OK_CANCEL_OPTION);
-        if (result == JOptionPane.OK_OPTION) {
+    private void modifierAvis(ActionEvent e) {
+        int selectedRow = tableAvis.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Veuillez sélectionner un avis à modifier.", "Erreur", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        int idAvis = (int) tableModel.getValueAt(selectedRow, 0);
+        String note = (String) JOptionPane.showInputDialog(this, "Nouvelle note :", "Modifier la note",
+                JOptionPane.QUESTION_MESSAGE, null, new String[]{"1", "2", "3", "4", "5"}, tableModel.getValueAt(selectedRow, 1));
+        if (note == null) return;
+
+        String date = JOptionPane.showInputDialog(this, "Nouvelle date (YYYY-MM-DD) :", tableModel.getValueAt(selectedRow, 2));
+        String commentaire = JOptionPane.showInputDialog(this, "Nouveau commentaire :", tableModel.getValueAt(selectedRow, 3));
+
+        if (date != null && commentaire != null) {
             try {
-                AvisClient avisClient = new AvisClient(0, Integer.parseInt(fieldNote.getText()),
-                        fieldDate.getText(), fieldCommentaire.getText(), Integer.parseInt(fieldIdClient.getText()));
-                avisClientService.insertAvis(avisClient);
-                JOptionPane.showMessageDialog(this, "Avis ajouté avec succès !");
-                actualiserListe(null);
+                avisClientService.updateAvis(new AvisClient(idAvis, Integer.parseInt(note), date, commentaire, 0));
+                JOptionPane.showMessageDialog(this, "Avis modifié avec succès !");
+                actualiserListe();
             } catch (Exception ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Erreur lors de l'ajout de l'avis : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Erreur lors de la modification : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
 
-    private void actualiserListe(ActionEvent e) {
+    private void supprimerAvis(ActionEvent e) {
+        int selectedRow = tableAvis.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Veuillez sélectionner un avis à supprimer.", "Erreur", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        int idAvis = (int) tableModel.getValueAt(selectedRow, 0);
+        int confirm = JOptionPane.showConfirmDialog(this, "Voulez-vous vraiment supprimer cet avis ?", "Confirmation", JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {
+            try {
+                avisClientService.deleteAvis(new AvisClient(idAvis, 0, "", "", 0));
+            } catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+            JOptionPane.showMessageDialog(this, "Avis supprimé avec succès !");
+            actualiserListe();
+        }
+    }
+
+    private void actualiserListe() {
         tableModel.setRowCount(0);
         try {
             AvisClients avisClients = avisClientService.selectAvisClients();
             for (AvisClient avis : avisClients.getAvisClients()) {
-                tableModel.addRow(new Object[]{
-                        avis.getIdAvis(),
-                        avis.getNote(),
-                        avis.getDateAvis(),
-                        avis.getCommentaires(),
-                        avis.getIdClient()
-                });
+                tableModel.addRow(new Object[]{avis.getIdAvis(), avis.getNote(), avis.getDateAvis(), avis.getCommentaires(), avis.getIdClient()});
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "Erreur de rafraîchissement : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
         }
-    }
-
-    public static void openFrame(NetworkConfig networkConfig) {
-        SwingUtilities.invokeLater(() -> new GestionAvisClients(networkConfig));
     }
 }

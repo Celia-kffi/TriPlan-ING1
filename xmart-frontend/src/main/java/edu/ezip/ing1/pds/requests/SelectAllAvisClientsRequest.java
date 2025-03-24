@@ -1,4 +1,5 @@
 package edu.ezip.ing1.pds.requests;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.ezip.ing1.pds.business.dto.AvisClients;
 import edu.ezip.ing1.pds.client.commons.ClientRequest;
@@ -17,6 +18,10 @@ public class SelectAllAvisClientsRequest extends ClientRequest<Object, AvisClien
 
     @Override
     public AvisClients readResult(String body) throws IOException {
+        if (body == null || body.isEmpty()) {
+            throw new IOException("La réponse de SELECT_ALL_AVIS est vide ou nulle");
+        }
+
         final ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(body, AvisClients.class);
     }

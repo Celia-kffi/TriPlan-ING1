@@ -1,27 +1,28 @@
 #!/bin/bash
 
-# Build the project
+
+set -e  # Arrêter le script en cas d'erreur
+
+#Compilation du projet
 mvn clean package
 
-# Send the jar to the server
-cd /d/propre/propre/xmart-city-backend/target
+#Déplacement vers le dossier du fichier généré
+cd xmart-city-backend/target || { echo "Erreur : dossier introuvable"; exit 1; }
 
-scp -P 121  xmart-zity-backend-1.0-SNAPSHOT-jar-with-dependencies.jar backend@172.31.250.95:backend2.jar
+#Envoi du fichier JAR sur la VM
+ scp -P 121 xmart-zity-backend-1.0-SNAPSHOT-jar-with-dependencies.jar backend@172.31.250.95:/home/backend/backend3.jar
 
-# put thepassword manually for the backend
-
+#Vérification de l'envoi
 if [ $? -eq 0 ]; then
-    echo "File sent successfully."
+    echo "Fichier envoyé avec succès !"
 else
-    echo "Error sending file."
+    echo "Erreur lors de l'envoi du fichier."
+    exit 1
 fi
 
-# Check if the file was sent successfully and run the jar
-if [ $? -eq 0 ]; then
-    ssh -p 121 backend@172.31.250.95
-    java -jar backend2.jar
-else
-    echo "Error running the jar."
-fi
+#Connexion SSH et exécution du JAR dans la VM
+ssh -p 121 backend@172.31.250.95 "java -jar /home/backend/backend3.jar"
 
+#Message de confirmation
+echo "Déploiement réussi : Le backend a été mis à jour et lancé avec succès!"
 

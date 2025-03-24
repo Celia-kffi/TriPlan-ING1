@@ -21,6 +21,10 @@ public class InsertAvisClientRequest extends ClientRequest<AvisClient, String> {
     public String readResult(String body) throws IOException {
         final ObjectMapper mapper = new ObjectMapper();
         final Map<String, Integer> avisIdMap = mapper.readValue(body, Map.class);
+        if (!avisIdMap.containsKey("avis_id") || avisIdMap.get("avis_id") == null) {
+            throw new IOException("Erreur : 'avis_id' est absent ou null dans la réponse JSON !");
+        }
+
         return avisIdMap.get("avis_id").toString();
     }
 }

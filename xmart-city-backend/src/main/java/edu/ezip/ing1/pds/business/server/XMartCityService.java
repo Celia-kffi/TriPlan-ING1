@@ -29,6 +29,10 @@ public class XMartCityService {
     private enum Queries {
         SELECT_ALL_AVIS("SELECT id_avis, note, date_avis, commentaires, id_client FROM avis_clients"),
         INSERT_AVIS("INSERT INTO avis_clients (note, date_avis, commentaires, id_client) VALUES (?, ?, ?, ?)"),
+
+        DELETE_AVIS("DELETE FROM avis_clients WHERE id_avis = ?"),
+        UPDATE_AVIS("UPDATE avis_clients SET note = ?, date_avis = ?, commentaires = ? WHERE id_avis = ?"),
+
         SELECT_ALL_CLIENTS("SELECT id_client ,nom, prenom, age, nationalite, budget, id_paiement FROM clients "),
         INSERT_CLIENT("INSERT INTO clients (nom, prenom, age, nationalite, budget, id_paiement) VALUES (?, ?, ?, ?, ?, ?)"),
         DELETE_CLIENT("DELETE FROM clients WHERE id_client = ? "),
@@ -47,6 +51,7 @@ public class XMartCityService {
     }
 
     public static XMartCityService inst = null;
+
     public static final XMartCityService getInstance() {
         if (inst == null) {
             inst = new XMartCityService();
@@ -54,7 +59,8 @@ public class XMartCityService {
         return inst;
     }
 
-    private XMartCityService() {}
+    private XMartCityService() {
+    }
 
     public final Response dispatch(final Request request, final Connection connection)
             throws InvocationTargetException, IllegalAccessException, SQLException, IOException {
@@ -67,17 +73,23 @@ public class XMartCityService {
             case INSERT_AVIS:
                 response = insertAvis(request, connection);
                 break;
+            case DELETE_AVIS:
+                response = deleteAvis(request, connection);
+                break;
+            case UPDATE_AVIS:
+                response = updateAvis(request, connection);
+                break;
             case SELECT_ALL_CLIENTS:
-                response=selectAllClients(request, connection);
+                response = selectAllClients(request, connection);
                 break;
             case INSERT_CLIENT:
-                response=insertClient(request,connection);
+                response = insertClient(request, connection);
                 break;
             case DELETE_CLIENT:
-                response=deleteClient(request,connection);
+                response = deleteClient(request, connection);
                 break;
             case UPDATE_CLIENT:
-                response=updateClient(request,connection);
+                response = updateClient(request, connection);
                 break;
             case SELECT_ALL_EMPREINTES:
                 response = SelectAllEmpreintes(request, connection);
@@ -85,13 +97,13 @@ public class XMartCityService {
             case INSERT_EMPREINTE:
                 response = InsertEmpreinte(request, connection);
                 break;
-            case SELECT_ALL_TRANSPORTS:
+            /*case SELECT_ALL_TRANSPORTS:
                 response = SelectAllTransports(request, connection);
                 break;
             case INSERT_TRANSPORT:
                 response = InsertTransport(request, connection);
                 break;
-            /*case DELETE_EMPREINTE:
+            case DELETE_EMPREINTE:
                 response = DeleteEmpreinte(request, connection);
                 break;*/
             default:
@@ -129,6 +141,40 @@ public class XMartCityService {
             avisClients.add(avisClient);
         }
         return new Response(request.getRequestId(), objectMapper.writeValueAsString(avisClients));
+    }
+
+    private Response deleteAvis(final Request request, final Connection connection) throws SQLException, IOException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final AvisClient avisClient = objectMapper.readValue(request.getRequestBody(), AvisClient.class);
+
+        final PreparedStatement stmt = connection.prepareStatement(Queries.DELETE_AVIS.query);
+        stmt.setInt(1, avisClient.getIdAvis());
+        int rowsAffected = stmt.executeUpdate();
+
+        if (rowsAffected > 0) {
+            return new Response(request.getRequestId(), "Avis supprimé avec succès.");
+        } else {
+            return new Response(request.getRequestId(), "Avis introuvable.");
+        }
+    }
+
+
+    private Response updateAvis(final Request request, final Connection connection) throws SQLException, IOException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final AvisClient avisClient = objectMapper.readValue(request.getRequestBody(), AvisClient.class);
+
+        final PreparedStatement stmt = connection.prepareStatement(Queries.UPDATE_AVIS.query);
+        stmt.setInt(1, avisClient.getNote());
+        stmt.setString(2, avisClient.getDateAvis());
+        stmt.setString(3, avisClient.getCommentaires());
+        stmt.setInt(4, avisClient.getIdAvis());
+        int rowsAffected = stmt.executeUpdate();
+
+        if (rowsAffected > 0) {
+            return new Response(request.getRequestId(), "Avis mis à jour avec succès.");
+        } else {
+            return new Response(request.getRequestId(), "Avis introuvable ou aucune modification effectuée.");
+        }
     }
 
     private Response selectAllClients(final Request request, final Connection connection) throws SQLException, JsonProcessingException {
@@ -170,6 +216,7 @@ public class XMartCityService {
 
         return new Response(request.getRequestId(), objectMapper.writeValueAsString(client));
     }
+
     private Response deleteClient(final Request request, final Connection connection) throws SQLException, IOException {
         final ObjectMapper objectMapper = new ObjectMapper();
         final Client client = objectMapper.readValue(request.getRequestBody(), Client.class);
@@ -205,142 +252,42 @@ public class XMartCityService {
             return new Response(request.getRequestId(), "Client introuvable ou aucune modification effectuée.");
         }
     }
-/*
-    private Response insertEmpreinte(final Request request, final Connection connection) throws SQLException, IOException {
+    private Response InsertEmpreinte(final Request request, final Connection connection) throws SQLException, IOException {
         final ObjectMapper objectMapper = new ObjectMapper();
-        final EmpreinteCarbone empreinte = objectMapper.readValue(request.getRequestBody(), EmpreinteCarbone.class);
+        final EmpreinteCarbone empreinteCarbone = objectMapper.readValue(request.getRequestBody(), EmpreinteCarbone.class);
 
-        final PreparedStatement stmt = connection.prepareStatement(Queries.INSERT_EMPREINTE.query);
-        stmt.setDouble(1, empreinte.getEmpreinteKgCO2());
-        stmt.setString(2, empreinte.getTypeDeTransport());
-        stmt.setDouble(3, empreinte.getFacteurEmission());
-        stmt.setDouble(4, empreinte.getDistance());
-        stmt.executeUpdate();
-
-        return new Response(request.getRequestId(), objectMapper.writeValueAsString(empreinte));
-    }
-
-    private Response selectAllEmpreintes(final Request request, final Connection connection) throws SQLException, JsonProcessingException {
-        final ObjectMapper objectMapper = new ObjectMapper();
-        final Statement stmt = connection.createStatement();
-        final ResultSet res = stmt.executeQuery(Queries.SELECT_ALL_EMPREINTES.query);
-        EmpreintesCarbone empreintes = new EmpreintesCarbone();
-        while (res.next()) {
-            EmpreinteCarbone empreinte = new EmpreinteCarbone();
-            empreinte.setIdEmpreinte(res.getInt(1));
-            empreinte.setEmpreinteKgCO2(res.getInt(2));
-            empreinte.setTypeDeTransport(res.getString(3));
-            empreinte.setFacteurEmission(res.getDouble(4));
-            empreinte.setDistance(res.getDouble(5));
-            empreintes.add(empreinte);
+        // 1. Vérifier la connexion
+        if (connection.isClosed()) {
+            logger.error("Connexion fermée !");
+            return new Response(request.getRequestId(), "{\"error\": \"Database connection closed\"}");
         }
-        return new Response(request.getRequestId(), objectMapper.writeValueAsString(empreintes));
-    }
-    private Response deleteEmpreinte(final Request request, final Connection connection) throws SQLException, IOException {
-        final ObjectMapper objectMapper = new ObjectMapper();
-        final EmpreinteCarbone empreinte = objectMapper.readValue(request.getRequestBody(), EmpreinteCarbone.class);
 
-        try (PreparedStatement stmt = connection.prepareStatement(Queries.DELETE_EMPREINTE.query)) {
-            stmt.setInt(1, empreinte.getIdEmpreinte());
+        // 2. Journaliser les données reçues
+        logger.debug("Tentative d'insertion : {}", empreinteCarbone);
+
+        // 3. Exécuter la requête
+        try (PreparedStatement stmt = connection.prepareStatement(Queries.INSERT_EMPREINTE.query, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setDouble(1, empreinteCarbone.getEmpreinteKgCO2());
+            // Autres champs (type_de_transport, facteur_emission, distance) ne sont plus nécessaires ici
+
             int affectedRows = stmt.executeUpdate();
-            if (affectedRows == 0) {
-                return new Response(request.getRequestId(), "Aucune empreinte trouvée avec cet ID.");
-            }
-        }
 
-        return new Response(request.getRequestId(), "Empreinte supprimée avec succès");
-    }
-
-    private Response updateEmpreinte(final Request request, final Connection connection) throws SQLException, IOException {
-        final ObjectMapper objectMapper = new ObjectMapper();
-        final EmpreinteCarbone empreinte = objectMapper.readValue(request.getRequestBody(), EmpreinteCarbone.class);
-
-        try (PreparedStatement stmt = connection.prepareStatement(Queries.UPDATE_EMPREINTE.query)) {
-            stmt.setDouble(1, empreinte.getEmpreinteKgCO2());
-            stmt.setString(2, empreinte.getTypeDeTransport());
-            stmt.setDouble(3, empreinte.getFacteurEmission());
-            stmt.setDouble(4, empreinte.getDistance());
-            stmt.setInt(5, empreinte.getIdEmpreinte());
-            int affectedRows = stmt.executeUpdate();
-            if (affectedRows == 0) {
-                return new Response(request.getRequestId(), "Aucune empreinte mise à jour, ID introuvable.");
-            }
-        }
-
-        return new Response(request.getRequestId(), "Empreinte mise à jour avec succès");
-    }
-private Response selectMoyenTransports(final Request request, final Connection connection) throws SQLException, JsonProcessingException {
-    final ObjectMapper objectMapper = new ObjectMapper();
-    final Statement stmt = connection.createStatement();
-    final ResultSet res = stmt.executeQuery(Queries.SELECT_MOYEN_TRANSPORTS.query);
-
-    ArrayList<MoyenTransport> transportsList = new ArrayList<>();
-
-    while (res.next()) {
-        MoyenTransport transport = new MoyenTransport();
-        transport.setIdMoyenDestination(res.getInt("id_moyen_destination"));
-        transport.setTypeTransport(res.getString("type_transports"));
-        transportsList.add(transport);
-    }
-
-
-    return new Response(request.getRequestId(), objectMapper.writeValueAsString(transportsList));
-}
-
-
-    private Response getFacteurEmission(final Request request, final Connection connection) throws SQLException, IOException {
-        final ObjectMapper objectMapper = new ObjectMapper();
-        final int idMoyenDestination = objectMapper.readValue(request.getRequestBody(), Integer.class);
-
-        final PreparedStatement stmt = connection.prepareStatement(Queries.GET_FACTEUR_EMISSION.query);
-        stmt.setInt(1, idMoyenDestination);
-
-        final ResultSet res = stmt.executeQuery();
-
-        if (res.next()) {
-            double facteurEmission = res.getDouble("facteur_emission");
-            return new Response(request.getRequestId(), objectMapper.writeValueAsString(facteurEmission));
-        } else {
-            return new Response(request.getRequestId(), "Aucun facteur d'émission trouvé.");
-        }
-    }
-*/
-private Response InsertEmpreinte(final Request request, final Connection connection) throws SQLException, IOException {
-    final ObjectMapper objectMapper = new ObjectMapper();
-    final EmpreinteCarbone empreinteCarbone = objectMapper.readValue(request.getRequestBody(), EmpreinteCarbone.class);
-
-    // 1. Vérifier la connexion
-    if (connection.isClosed()) {
-        logger.error("Connexion fermée !");
-        return new Response(request.getRequestId(), "{\"error\": \"Database connection closed\"}");
-    }
-
-    // 2. Journaliser les données reçues
-    logger.debug("Tentative d'insertion : {}", empreinteCarbone);
-
-    // 3. Exécuter la requête
-    try (PreparedStatement stmt = connection.prepareStatement(Queries.INSERT_EMPREINTE.query, Statement.RETURN_GENERATED_KEYS)) {
-        stmt.setDouble(1, empreinteCarbone.getEmpreinteKgCO2());
-        // Autres champs (type_de_transport, facteur_emission, distance) ne sont plus nécessaires ici
-
-        int affectedRows = stmt.executeUpdate();
-
-        // 4. Récupérer l'ID généré
-        if (affectedRows > 0) {
-            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    empreinteCarbone.setIdEmpreinte(generatedKeys.getInt(1));
+            // 4. Récupérer l'ID généré
+            if (affectedRows > 0) {
+                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        empreinteCarbone.setIdEmpreinte(generatedKeys.getInt(1));
+                    }
                 }
             }
-        }
 
-        logger.info("Empreinte carbone insérée avec succès : ID {}", empreinteCarbone.getIdEmpreinte());
-        return new Response(request.getRequestId(), objectMapper.writeValueAsString(empreinteCarbone));
-    } catch (SQLException e) {
-        logger.error("Erreur SQL lors de l'insertion : ", e);
-        return new Response(request.getRequestId(), "{\"error\": \"" + e.getMessage() + "\"}");
+            logger.info("Empreinte carbone insérée avec succès : ID {}", empreinteCarbone.getIdEmpreinte());
+            return new Response(request.getRequestId(), objectMapper.writeValueAsString(empreinteCarbone));
+        } catch (SQLException e) {
+            logger.error("Erreur SQL lors de l'insertion : ", e);
+            return new Response(request.getRequestId(), "{\"error\": \"" + e.getMessage() + "\"}");
+        }
     }
-}
 
     private Response SelectAllEmpreintes(final Request request, final Connection connection) throws SQLException, JsonProcessingException {
         final ObjectMapper objectMapper = new ObjectMapper();
@@ -358,38 +305,7 @@ private Response InsertEmpreinte(final Request request, final Connection connect
         logger.info("Récupération de toutes les empreintes carbone : {} éléments trouvés", empreintesCarbone.getEmpreintesCarbone().size());
         return new Response(request.getRequestId(), objectMapper.writeValueAsString(empreintesCarbone));
     }
-
-    private Response InsertTransport(final Request request, final Connection connection) throws SQLException, IOException {
-        final ObjectMapper objectMapper = new ObjectMapper();
-        final MoyenTransport moyenTransport = objectMapper.readValue(request.getRequestBody(), MoyenTransport.class);
-        final PreparedStatement stmt = connection.prepareStatement(Queries.INSERT_TRANSPORT.query);
-        stmt.setString(1, moyenTransport.getTypeTransport());
-        stmt.setDouble(2, moyenTransport.getFacteurEmission()); // Ajout du facteur d'émission
-        stmt.executeUpdate();
-
-        final Statement stmt2 = connection.createStatement();
-        final ResultSet res = stmt2.executeQuery("SELECT LAST_INSERT_ID()");
-        res.next();
-        moyenTransport.setIdMoyenDestination(res.getInt(1)); // Mise à jour avec l'ID du moyen de transport
-        logger.info("Insertion d'un nouveau moyen de transport : {}", moyenTransport);
-        return new Response(request.getRequestId(), objectMapper.writeValueAsString(moyenTransport));
-    }
-
-    private Response SelectAllTransports(final Request request, final Connection connection) throws SQLException, JsonProcessingException {
-        final ObjectMapper objectMapper = new ObjectMapper();
-        final Statement stmt = connection.createStatement();
-        final ResultSet res = stmt.executeQuery(Queries.SELECT_ALL_TRANSPORTS.query);
-        MoyenTransports moyensTransports = new MoyenTransports();
-        while (res.next()) {
-            MoyenTransport moyenTransport = new MoyenTransport();
-            moyenTransport.setIdMoyenDestination(res.getInt("id_transport"));
-            moyenTransport.setTypeTransport(res.getString("type_transport"));
-            moyenTransport.setFacteurEmission(res.getDouble("facteur_emission")); // Gestion du facteur d'émission
-            moyensTransports.add(moyenTransport);
-        }
-        logger.info("Récupération de tous les moyens de transport : {} éléments trouvés", moyensTransports.getMoyensDeTransport().size());
-        return new Response(request.getRequestId(), objectMapper.writeValueAsString(moyensTransports));
-    }
-
 }
+
+
 

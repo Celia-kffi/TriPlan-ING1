@@ -26,14 +26,14 @@ public class AvisClient {
         this.idClient = idClient;
     }
 
-    public final AvisClient build(final ResultSet resultSet) throws SQLException {
-        this.idAvis = resultSet.getInt("id_avis");
-        this.note = resultSet.getInt("note");
-        this.dateAvis = resultSet.getString("date_avis");
-        this.commentaires = resultSet.getString("commentaires");
-        this.idClient = resultSet.getInt("id_client");
-        return this;
-    }
+//    public final AvisClient build(final ResultSet resultSet) throws SQLException {
+//        this.idAvis = resultSet.getInt("id_avis");
+//        this.note = resultSet.getInt("note");
+//        this.dateAvis = resultSet.getString("date_avis");
+//        this.commentaires = resultSet.getString("commentaires");
+//        this.idClient = resultSet.getInt("id_client");
+//        return this;
+//    }
 
     public int getIdAvis() { return idAvis; }
     public int getNote() { return note; }

@@ -20,14 +20,18 @@ import edu.ezip.ing1.pds.client.commons.NetworkConfig;
 import edu.ezip.ing1.pds.commons.Request;
 import edu.ezip.ing1.pds.requests.InsertAvisClientRequest;
 import edu.ezip.ing1.pds.requests.SelectAllAvisClientsRequest;
+import edu.ezip.ing1.pds.requests.UpdateAvisClientRequest;
+import edu.ezip.ing1.pds.requests.DeleteAvisClientRequest;
 
 public class AvisClientService {
 
-    private static final String LoggingLabel = "FrontEnd - AvisClientService";
-    private static final Logger logger = LoggerFactory.getLogger(LoggingLabel);
+    private final static String LoggingLabel = "FrontEnd - AvisClientService";
+    private final static Logger logger = LoggerFactory.getLogger(LoggingLabel);
 
-    private static final String INSERT_REQUEST_ORDER = "INSERT_AVIS";
-    private static final String SELECT_REQUEST_ORDER = "SELECT_ALL_AVIS";
+    final String insertRequestOrder = "INSERT_AVIS";
+    final String selectRequestOrder = "SELECT_ALL_AVIS";
+    final String deleteRequestOrder = "DELETE_AVIS";
+    final String updateRequestOrder = "UPDATE_AVIS";
 
     private final NetworkConfig networkConfig;
 
@@ -36,45 +40,71 @@ public class AvisClientService {
     }
 
     public void insertAvis(AvisClient avisClient) throws InterruptedException, IOException {
+        processAvisClient(avisClient, insertRequestOrder);
+    }
+
+    public void deleteAvis(AvisClient avisClient) throws InterruptedException, IOException {
+        processAvisClient(avisClient, deleteRequestOrder);
+    }
+
+    public void updateAvis(AvisClient avisClient) throws InterruptedException, IOException {
+        processAvisClient(avisClient, updateRequestOrder);
+    }
+
+    private void processAvisClient(AvisClient avisClient, String requestOrder) throws InterruptedException, IOException {
+        final Deque<ClientRequest> clientRequests = new ArrayDeque<>();
+
         final ObjectMapper objectMapper = new ObjectMapper();
         final String jsonifiedAvis = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(avisClient);
-        logger.trace("Avis with its JSON face : {}", jsonifiedAvis);
+        logger.trace("AvisClient JSON : {}", jsonifiedAvis);
 
         final String requestId = UUID.randomUUID().toString();
         final Request request = new Request();
         request.setRequestId(requestId);
-        request.setRequestOrder(INSERT_REQUEST_ORDER);
+        request.setRequestOrder(requestOrder);
         request.setRequestContent(jsonifiedAvis);
         objectMapper.enable(SerializationFeature.WRAP_ROOT_VALUE);
         final byte[] requestBytes = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(request);
 
         final InsertAvisClientRequest avisRequest = new InsertAvisClientRequest(
                 networkConfig, 0, request, avisClient, requestBytes);
+        clientRequests.push(avisRequest);
 
-        avisRequest.join();
-        logger.debug("Insertion complete : {} --> {}",
-                avisRequest.getInfo(),
-                avisRequest.getResult());
+        while (!clientRequests.isEmpty()) {
+            final ClientRequest processedRequest = clientRequests.pop();
+            processedRequest.join();
+            final AvisClient processedAvis = (AvisClient) processedRequest.getInfo();
+            logger.debug("Thread {} terminé : Avis ID {} --> {}",
+                    processedRequest.getThreadName(),
+                    processedAvis.getIdAvis(),
+                    processedRequest.getResult());
+        }
     }
 
     public AvisClients selectAvisClients() throws InterruptedException, IOException {
+        final Deque<ClientRequest> clientRequests = new ArrayDeque<>();
         final ObjectMapper objectMapper = new ObjectMapper();
 
         final String requestId = UUID.randomUUID().toString();
         final Request request = new Request();
         request.setRequestId(requestId);
-        request.setRequestOrder(SELECT_REQUEST_ORDER);
+        request.setRequestOrder(selectRequestOrder);
         objectMapper.enable(SerializationFeature.WRAP_ROOT_VALUE);
         final byte[] requestBytes = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(request);
         LoggingUtils.logDataMultiLine(logger, Level.TRACE, requestBytes);
 
         final SelectAllAvisClientsRequest avisRequest = new SelectAllAvisClientsRequest(
                 networkConfig, 0, request, null, requestBytes);
+        clientRequests.push(avisRequest);
 
-        avisRequest.join();
-        logger.debug("Selection complete : {}",
-                avisRequest.getThreadName());
-
-        return (AvisClients) avisRequest.getResult();
+        if (!clientRequests.isEmpty()) {
+            final ClientRequest joinedAvisRequest = clientRequests.pop();
+            joinedAvisRequest.join();
+            logger.debug("Thread {} terminé.", joinedAvisRequest.getThreadName());
+            return (AvisClients) joinedAvisRequest.getResult();
+        } else {
+            logger.error("Aucun avis trouvé");
+            return null;
+        }
     }
 }

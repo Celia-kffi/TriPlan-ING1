@@ -29,7 +29,6 @@ public class XMartCityService {
     private enum Queries {
         SELECT_ALL_AVIS("SELECT id_avis, note, date_avis, commentaires, id_client FROM avis_clients"),
         INSERT_AVIS("INSERT INTO avis_clients (note, date_avis, commentaires, id_client) VALUES (?, ?, ?, ?)"),
-
         DELETE_AVIS("DELETE FROM avis_clients WHERE id_avis = ?"),
         UPDATE_AVIS("UPDATE avis_clients SET note = ?, date_avis = ?, commentaires = ? WHERE id_avis = ?"),
 
@@ -37,6 +36,12 @@ public class XMartCityService {
         INSERT_CLIENT("INSERT INTO clients (nom, prenom, age, nationalite, budget, id_paiement) VALUES (?, ?, ?, ?, ?, ?)"),
         DELETE_CLIENT("DELETE FROM clients WHERE id_client = ? "),
         UPDATE_CLIENT("UPDATE clients SET nom = ?, prenom = ?, age = ?, nationalite = ?, budget = ?, id_paiement = ? WHERE id_client = ?"),
+
+        SELECT_ALL_VOYAGES("SELECT id_voyage, montant, type_voyage, date_depart, date_retour, id_empreinte, id_client FROM voyages"),
+        INSERT_VOYAGE("INSERT INTO voyages (montant, type_voyage, date_depart, date_retour, id_empreinte, id_client) VALUES (?, ?, ?, ?, ?, ?)"),
+        DELETE_VOYAGE("DELETE FROM voyages WHERE id_voyage = ?"),
+        UPDATE_VOYAGE("UPDATE voyages SET montant= ?,type_voyage=?, date_depart=?, date_retour=?, id_empreinte=?, id_client=? WHERE id_voyage = ? "),
+
         SELECT_ALL_EMPREINTES("SELECT id_empreinte, empreinte_kgCO2 FROM empreinte_carbone"),
         INSERT_EMPREINTE("INSERT INTO empreinte_carbone (empreinte_kgCO2) VALUES (?)"),
         DELETE_EMPREINTE("DELETE FROM empreinte_carbone WHERE id_empreinte = ?"),
@@ -91,6 +96,19 @@ public class XMartCityService {
             case UPDATE_CLIENT:
                 response = updateClient(request, connection);
                 break;
+            case SELECT_ALL_VOYAGES:
+                response=selectAllVoyages(request,connection);
+                break;
+            case INSERT_VOYAGE:
+                response=insertVoyage(request,connection);
+                break;
+            case DELETE_VOYAGE:
+                response=deleteVoyage(request,connection);
+                break;
+            case UPDATE_VOYAGE:
+                response=updateVoyage(request,connection);
+                break;
+
             case SELECT_ALL_EMPREINTES:
                 response = SelectAllEmpreintes(request, connection);
                 break;
@@ -252,27 +270,106 @@ public class XMartCityService {
             return new Response(request.getRequestId(), "Client introuvable ou aucune modification effectuée.");
         }
     }
+
+    private Response selectAllVoyages(final Request request, final Connection connection) throws SQLException, JsonProcessingException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final Statement stmt = connection.createStatement();
+        final ResultSet res = stmt.executeQuery(Queries.SELECT_ALL_VOYAGES.query);
+        Voyages voyages = new Voyages();
+        while (res.next()) {
+            Voyage voyage = new Voyage();
+            voyage.setIdVoyage(res.getInt(1));
+            voyage.setMontant(res.getDouble(2));
+            voyage.setTypeVoyage(res.getString(3));
+            voyage.setDateDepart(res.getString(4));
+            voyage.setDateRetour(res.getString(5));
+            voyage.setIdEmpreinte(res.getInt(6));
+            voyage.setIdClient(res.getInt(7));
+            voyages.add(voyage);
+        }
+        return new Response(request.getRequestId(), objectMapper.writeValueAsString(voyages));
+    }
+
+    private Response insertVoyage(final Request request, final Connection connection) throws SQLException, IOException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final Voyage voyage = objectMapper.readValue(request.getRequestBody(), Voyage.class);
+
+        final PreparedStatement stmt = connection.prepareStatement(Queries.INSERT_VOYAGE.query, Statement.RETURN_GENERATED_KEYS);
+        stmt.setDouble(1, voyage.getMontant());
+        stmt.setString(2, voyage.getTypeVoyage());
+        stmt.setString(3, voyage.getDateDepart());
+        stmt.setString(4, voyage.getDateRetour());
+        stmt.setInt(5, voyage.getIdEmpreinte());
+        stmt.setInt(6, voyage.getIdClient());
+        stmt.executeUpdate();
+
+        ResultSet generatedKeys = stmt.getGeneratedKeys();
+        if (generatedKeys.next()) {
+            voyage.setIdVoyage(generatedKeys.getInt(1));
+        }
+
+        return new Response(request.getRequestId(), objectMapper.writeValueAsString(voyage));
+    }
+
+    private Response deleteVoyage(final Request request, final Connection connection) throws SQLException, IOException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final Voyage voyage = objectMapper.readValue(request.getRequestBody(), Voyage.class);
+
+        final PreparedStatement stmt = connection.prepareStatement(Queries.DELETE_VOYAGE.query);
+        stmt.setInt(1, voyage.getIdVoyage());
+        int rowsAffected = stmt.executeUpdate();
+
+        if (rowsAffected > 0) {
+            return new Response(request.getRequestId(), "Voyage supprimé avec succès.");
+        } else {
+            return new Response(request.getRequestId(), "Voyage introuvable.");
+        }
+    }
+
+    private Response updateVoyage(final Request request, final Connection connection) throws SQLException, IOException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final Voyage voyage = objectMapper.readValue(request.getRequestBody(), Voyage.class);
+
+        final PreparedStatement stmt = connection.prepareStatement(Queries.UPDATE_VOYAGE.query);
+        stmt.setDouble(1, voyage.getMontant());
+        stmt.setString(2, voyage.getTypeVoyage());
+        stmt.setString(3, voyage.getDateDepart());
+        stmt.setString(4, voyage.getDateRetour());
+        stmt.setInt(5, voyage.getIdEmpreinte());
+        stmt.setInt(6, voyage.getIdClient());
+        stmt.setInt(7, voyage.getIdVoyage());
+        int rowsAffected = stmt.executeUpdate();
+
+        if (rowsAffected > 0) {
+            return new Response(request.getRequestId(), "Voyage mis à jour avec succès.");
+        } else {
+            return new Response(request.getRequestId(), "Voyage introuvable ou aucune modification effectuée.");
+        }
+    }
+
+
+
     private Response InsertEmpreinte(final Request request, final Connection connection) throws SQLException, IOException {
         final ObjectMapper objectMapper = new ObjectMapper();
         final EmpreinteCarbone empreinteCarbone = objectMapper.readValue(request.getRequestBody(), EmpreinteCarbone.class);
 
-        // 1. Vérifier la connexion
+
         if (connection.isClosed()) {
             logger.error("Connexion fermée !");
             return new Response(request.getRequestId(), "{\"error\": \"Database connection closed\"}");
         }
 
-        // 2. Journaliser les données reçues
+
         logger.debug("Tentative d'insertion : {}", empreinteCarbone);
 
-        // 3. Exécuter la requête
+
         try (PreparedStatement stmt = connection.prepareStatement(Queries.INSERT_EMPREINTE.query, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setDouble(1, empreinteCarbone.getEmpreinteKgCO2());
-            // Autres champs (type_de_transport, facteur_emission, distance) ne sont plus nécessaires ici
+
 
             int affectedRows = stmt.executeUpdate();
 
-            // 4. Récupérer l'ID généré
+
             if (affectedRows > 0) {
                 try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
@@ -298,7 +395,7 @@ public class XMartCityService {
             EmpreinteCarbone empreinteCarbone = new EmpreinteCarbone();
             empreinteCarbone.setIdEmpreinte(res.getInt("id_empreinte"));
             empreinteCarbone.setEmpreinteKgCO2(res.getDouble("empreinte_kgCO2"));
-            // Le type de transport et la distance ne sont plus gérés dans cette classe
+
 
             empreintesCarbone.add(empreinteCarbone);
         }

@@ -1,23 +1,25 @@
 package edu.ezip.ing1.pds;
-import edu.ezip.ing1.pds.business.dto.MoyenTransport;
-import edu.ezip.ing1.pds.business.dto.MoyenTransports;
+
+import edu.ezip.ing1.pds.business.dto.Hebergement;
+import edu.ezip.ing1.pds.business.dto.Hebergements;
 import edu.ezip.ing1.pds.client.commons.ConfigLoader;
 import edu.ezip.ing1.pds.client.commons.NetworkConfig;
-import edu.ezip.ing1.pds.services.MoyenTransportService;
+import edu.ezip.ing1.pds.services.HebergementService;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 
+public class gestionHebergement extends JFrame {
 
-public class GestionMoyentransport extends JFrame {
     private DefaultTableModel tableModel;
-    private JTable tableClients;
-    private MoyenTransportService MoyenTransportService;
+    private JTable tableHebergement;
+    private HebergementService hebergementService;
 
-    public GestionMoyentransport() throws IOException {
-        setTitle("TriPlan - Gestion des moyens de transport");
+    public gestionHebergement() throws IOException {
+        setTitle("TriPlan - Gestion des Hebergement");
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -29,7 +31,7 @@ public class GestionMoyentransport extends JFrame {
         try {
             final String networkConfigFile = "network.yaml";
             final NetworkConfig networkConfig = ConfigLoader.loadConfig(NetworkConfig.class, networkConfigFile);
-            MoyenTransportService = new MoyenTransportService(networkConfig);
+            hebergementService = new HebergementService(networkConfig);
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Erreur de configuration réseau : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
@@ -40,19 +42,19 @@ public class GestionMoyentransport extends JFrame {
         add(title, BorderLayout.NORTH);
 
         JPanel panelCenter = new JPanel(new BorderLayout());
-        JLabel lblListe = new JLabel("Liste des moyens de transport :");
+        JLabel lblListe = new JLabel("Liste des hebergements :");
         lblListe.setFont(new Font("Serif", Font.BOLD, 16));
         lblListe.setForeground(new Color(40, 40, 100));
         lblListe.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         panelCenter.add(lblListe, BorderLayout.NORTH);
 
-        tableModel = new DefaultTableModel(new Object[][]{}, new String[]{"ID transport", "type de transport", "facteur de transport"});
-        tableClients = new JTable(tableModel);
-        tableClients.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
-        tableClients.getTableHeader().setBackground(new Color(220, 220, 220));
-        tableClients.setBackground(Color.WHITE);
-        tableClients.setFillsViewportHeight(true);
-        JScrollPane scrollPane = new JScrollPane(tableClients);
+        tableModel = new DefaultTableModel(new Object[][]{}, new String[]{"ID Heberegement","Prix par nuit", "Nom", "Type"});
+        tableHebergement = new JTable(tableModel);
+        tableHebergement.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
+        tableHebergement.getTableHeader().setBackground(new Color(220, 220, 220));
+        tableHebergement.setBackground(Color.WHITE);
+        tableHebergement.setFillsViewportHeight(true);
+        JScrollPane scrollPane = new JScrollPane(tableHebergement);
         panelCenter.add(scrollPane, BorderLayout.CENTER);
         add(panelCenter, BorderLayout.CENTER);
 
@@ -61,10 +63,10 @@ public class GestionMoyentransport extends JFrame {
         panelButtons.setBackground(backgroundColor);
         panelButtons.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        JButton btnAjouter = new JButton("Ajouter un moyen de transport");
-        JButton btnSupprimer = new JButton("Supprimer un moyen de transport");
+        JButton btnAjouter = new JButton("Ajouter un hebergement");
+        JButton btnSupprimer = new JButton("Supprimer un hebergement");
         JButton btnActualiser = new JButton("Actualiser la liste");
-        JButton btnModifier = new JButton("Modifier un moyen de trasnport");
+        JButton btnModifier = new JButton("Modifier un hebergement");
 
         btnAjouter.setBackground(new Color(39, 174, 96));
         btnAjouter.setForeground(Color.WHITE);
@@ -96,61 +98,69 @@ public class GestionMoyentransport extends JFrame {
 
         add(panelButtons, BorderLayout.WEST);
 
-        btnAjouter.addActionListener(this::ajouterTransport);
-        btnSupprimer.addActionListener(this::supprimerTransport);
+        btnAjouter.addActionListener(this::ajouterHebergement);
+        btnSupprimer.addActionListener(this::supprimerHebergement);
         btnActualiser.addActionListener(this::actualiserListe);
-        btnModifier.addActionListener(this::modifierTransport);
+        btnModifier.addActionListener(this::modifierHebergement);
 
         actualiserListe(null);
     }
 
-    private void ajouterTransport(ActionEvent e) {
-        String id = JOptionPane.showInputDialog(this, "id moyen de transport  :");
-        String type = JOptionPane.showInputDialog(this, "Type de transport :");
-        String facteurStr = JOptionPane.showInputDialog(this, "Facteur de transport :");
+    private void ajouterHebergement(ActionEvent e) {
+        String idStr = JOptionPane.showInputDialog(this, "id :");
+        String prixStr = JOptionPane.showInputDialog(this, "Prix :");
+        String nom = JOptionPane.showInputDialog(this, "Nom :");
+        String type = JOptionPane.showInputDialog(this, "Type :");
 
-
-        if (id != null && type != null && facteurStr != null) {
+        if (idStr != null && prixStr != null && nom != null && type != null) {
             try {
-                double facteur = Double.parseDouble(facteurStr);
-                MoyenTransport transport = new MoyenTransport(id, type, facteur);
-                MoyenTransportService.insertTransport(transport);
-                JOptionPane.showMessageDialog(this, "Moyen de transport ajouté avec succès !");
+                int id = Integer.parseInt(idStr);
+                int prix = Integer.parseInt(prixStr);
+
+                Hebergement hebergement = new Hebergement(id, prix, nom, type);
+                hebergementService.insertHebergement(hebergement);
+                JOptionPane.showMessageDialog(this, "Hebergement ajouté avec succès !");
                 actualiserListe(null);
+            } catch (NumberFormatException nfe) {
+                JOptionPane.showMessageDialog(this, "L'ID et le prix doivent être des nombres entiers.", "Erreur de saisie", JOptionPane.ERROR_MESSAGE);
             } catch (Exception ex) {
                 ex.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Erreur lors de l'ajout du moyen de transport : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Erreur lors de l'ajout de l'hébergement : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
 
-    private void supprimerTransport(ActionEvent e) {
-        int selectedRow = tableClients.getSelectedRow();
-        if (selectedRow != -1)
+
+    private void supprimerHebergement(ActionEvent e) {
+        int selectedRow = tableHebergement.getSelectedRow();
+        if (selectedRow != -1) {
+            int idhebergement = Integer.parseInt(tableModel.getValueAt(selectedRow, 0).toString());
+
+
+
             try {
-                String idTransport = tableModel.getValueAt(selectedRow, 0).toString();
-                MoyenTransport transport = new MoyenTransport(idTransport, "", 0.0);
-                MoyenTransportService.deleteTransport(transport);
+                Hebergement hebergement = new Hebergement(idhebergement, 0, "","");
+                hebergementService.deleteHebergement(hebergement);
                 actualiserListe(null);
-                JOptionPane.showMessageDialog(this, "Moyen de transport supprimé avec succès !");
+                JOptionPane.showMessageDialog(this, "Heberegement supprimé avec succès !");
             } catch (Exception ex) {
                 ex.printStackTrace();
                 JOptionPane.showMessageDialog(this, "Erreur lors de la suppression : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
             }
+        }
     }
-
-
 
     private void actualiserListe(ActionEvent e) {
         tableModel.setRowCount(0);
         try {
-            MoyenTransports transports  = MoyenTransportService.selectTransport();
-            if (transports != null) {
-                for (MoyenTransport transport : transports.getMoyenTransports()) {
+            Hebergements hebergements = hebergementService.selectHebergement();
+            if (hebergements != null) {
+                for (Hebergement hebergement : hebergements.getHebergements()) {
                     tableModel.addRow(new Object[]{
-                            transport.getIdMoyenDestination(),
-                            transport.getTypeTransports(),
-                            transport.getFacteurEmission(),
+                            hebergement.getIdHebergement(),
+                            hebergement.getPrixNuit(),
+                            hebergement.getNomH(),
+                            hebergement.getType(),
 
                     });
                 }
@@ -160,24 +170,20 @@ public class GestionMoyentransport extends JFrame {
             JOptionPane.showMessageDialog(this, "Erreur de rafraîchissement : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
         }
     }
-    private void modifierTransport(ActionEvent e) {
-        int selectedRow = tableClients.getSelectedRow();
+    private void modifierHebergement(ActionEvent e) {
+        int selectedRow = tableHebergement.getSelectedRow();
         if (selectedRow != -1) {
-            //int idClient = (int) tableModel.getValueAt(selectedRow, 0);
-            String id_moyen = (String) tableModel.getValueAt(selectedRow, 0);
-            String type = (String) tableModel.getValueAt(selectedRow, 1);
-            String facteur = JOptionPane.showInputDialog(selectedRow, 2);
-            String facteurStr = (String) tableModel.getValueAt(selectedRow, 2);
-           /* String nationalite = JOptionPane.showInputDialog(this, "Nouvelle nationalité :", tableModel.getValueAt(selectedRow, 4));
-            String budget = JOptionPane.showInputDialog(this, "Nouveau budget :", tableModel.getValueAt(selectedRow, 5));
-            String idPaiement = JOptionPane.showInputDialog(this, "Nouvel ID Paiement :", tableModel.getValueAt(selectedRow, 6));
+            int idHebergement = (int) tableModel.getValueAt(selectedRow, 0);
+            int prix = (int) tableModel.getValueAt(selectedRow, 1);
+            String nomH = (String) tableModel.getValueAt(selectedRow, 2);
+            String type = JOptionPane.showInputDialog(this, "Nouvel type :", tableModel.getValueAt(selectedRow, 3));
 
-*/
-            if (id_moyen != null && type != null && facteur != null) {
+
+            if ( nomH!= null &  type != null) {
                 try {
-                    MoyenTransport transport = new MoyenTransport(id_moyen, type, Double.parseDouble(facteur));
-                    MoyenTransportService.updateTransport(transport);
-                    JOptionPane.showMessageDialog(this, "Client modifié avec succès !");
+                    Hebergement hebergement = new Hebergement(idHebergement,prix, nomH, type);
+                    hebergementService.updateHebergement(hebergement);
+                    JOptionPane.showMessageDialog(this, "hebergeement modifié avec succès !");
                     actualiserListe(null);
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -189,11 +195,10 @@ public class GestionMoyentransport extends JFrame {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             try {
-                new GestionMoyentransport().setVisible(true);
-            } catch (IOException e) {
+                new gestionHebergement().setVisible(true);
+            } catch (Exception e) {
                 e.printStackTrace();
                 JOptionPane.showMessageDialog(null, "Erreur au lancement de l'application : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
             }
         });
-    }
-}
+}}

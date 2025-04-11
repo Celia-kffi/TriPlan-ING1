@@ -82,35 +82,7 @@ public class MoyenTransportService {
                     processedClient.getIdMoyenDestination(), processedClient.getTypeTransports(),
                     processedRequest.getResult());
         }
-    }/*
-    private void processVoyage(Voyage voyage, String requestOrder) throws InterruptedException, IOException {
-        final Deque<ClientRequest> voyageRequests = new ArrayDeque<>();
-        final ObjectMapper objectMapper = new ObjectMapper();
-        final String jsonifiedVoyage = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(voyage);
-        logger.trace("Voyage with its JSON face : {}", jsonifiedVoyage);
-
-        final String requestId = UUID.randomUUID().toString();
-        final Request request = new Request();
-        request.setRequestId(requestId);
-        request.setRequestOrder(requestOrder);
-        request.setRequestContent(jsonifiedVoyage);
-        objectMapper.enable(SerializationFeature.WRAP_ROOT_VALUE);
-        final byte[] requestBytes = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(request);
-
-        final InsertVoyagesClientRequest voyageRequest = new InsertVoyagesClientRequest(
-                networkConfig, 0, request, voyage, requestBytes);
-        voyageRequests.push(voyageRequest);
-
-        while (!voyageRequests.isEmpty()) {
-            final ClientRequest processedRequest = voyageRequests.pop();
-            processedRequest.join();
-            final Voyage processedVoyage = (Voyage) processedRequest.getInfo();
-            logger.debug("Thread {} complete : {} {} --> {}",
-                    processedRequest.getThreadName(),
-                    processedVoyage.getTypeVoyage(), processedVoyage.getMontant(),
-                    processedRequest.getResult());
-        }
-    }*/
+    }
 
     public MoyenTransports selectTransport() throws InterruptedException, IOException {
         final Deque<ClientRequest> transportRequests = new ArrayDeque<>();

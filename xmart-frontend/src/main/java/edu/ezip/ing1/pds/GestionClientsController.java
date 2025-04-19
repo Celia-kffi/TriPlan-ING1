@@ -1,6 +1,7 @@
 package edu.ezip.ing1.pds;
 
 import edu.ezip.ing1.pds.business.dto.Client;
+import edu.ezip.ing1.pds.business.dto.Clients;
 import edu.ezip.ing1.pds.services.ClientService;
 import edu.ezip.ing1.pds.client.commons.ConfigLoader;
 import edu.ezip.ing1.pds.client.commons.NetworkConfig;
@@ -92,6 +93,8 @@ public class GestionClientsController {
                 }
         );
 
+        actualiserListe();
+
 
     }
 
@@ -151,6 +154,7 @@ public class GestionClientsController {
             Client client = new Client(nom, prenom, age, nationalite, budget, idPaiement);
             clientService.insertClient(client);
             viderFormulaire();
+            actualiserListe();
             showAlert(AlertType.INFORMATION, "Client ajouté", "Le client a été ajouté avec succès", "");
         } catch (Exception ex) {
             showAlert(AlertType.ERROR, "Erreur d'ajout", "Erreur lors de l'ajout du client", ex.getMessage());
@@ -178,6 +182,7 @@ public class GestionClientsController {
 
             Client client = new Client(idClient, nom, prenom, age, nationalite, budget, idPaiement);
             clientService.updateClient(client);
+            actualiserListe();
             showAlert(AlertType.INFORMATION, "Client modifié", "Le client a été modifié avec succès", "");
         } catch (Exception ex) {
             showAlert(AlertType.ERROR, "Erreur de modification", "Erreur lors de la modification", ex.getMessage());
@@ -195,12 +200,25 @@ public class GestionClientsController {
         try {
             clientService.deleteClient(selectedClient);
             viderFormulaire();
+            actualiserListe();
             selectedClient = null;
             showAlert(AlertType.INFORMATION, "Client supprimé", "Le client a été supprimé avec succès", "");
         } catch (Exception ex) {
             showAlert(AlertType.ERROR, "Erreur de suppression", "Erreur lors de la suppression", ex.getMessage());
         }
     }
+    private void actualiserListe() {
+        try {
+            Clients clients = clientService.selectClients();
+            tableClients.getItems().clear();
+            if (clients != null && clients.getClients() != null) {
+                tableClients.getItems().addAll(clients.getClients());
+            }
+        } catch (Exception ex) {
+            showAlert(AlertType.ERROR, "Erreur", "Impossible de charger les clients", ex.getMessage());
+        }
+    }
+
     @FXML
     private void ouvrirFenetreVoyage(ActionEvent event) {
         try{

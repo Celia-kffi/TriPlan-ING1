@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane prefHeight="579.0" prefWidth="862.0" style="-fx-background-color: #f5f7fa;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.ezip.ing1.pds.ListeVoyageController">
+    <top>
+        <HBox alignment="CENTER_LEFT" prefHeight="73.0" prefWidth="897.0" style="-fx-background-color: #1a7fa1; -fx-padding: 15px;" BorderPane.alignment="CENTER">
+            <children>
+                <Label prefHeight="39.0" prefWidth="195.0" text="Espace Voyage" textFill="#eefaff">
+                    <font>
+                        <Font name="Cambria Bold Italic" size="24.0" />
+                    </font>
+                </Label>
+
+                <HBox alignment="CENTER_RIGHT" prefHeight="39.0" prefWidth="337.0" HBox.hgrow="ALWAYS">
+                    <children>
+                       
+                    </children>
+                </HBox>
+            </children>
+        </HBox>
+    </top>
+    <center>
+        <VBox spacing="20.0" style="-fx-background-color: #f8f7ef;" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets bottom="20.0" left="30.0" right="30.0" top="20.0" />
+            </padding>
+            <children>
+                <Label prefHeight="27.0" prefWidth="195.0" text="Liste des Voyages" textFill="#1a7fa1">
+                    <font>
+                        <Font name="Bell MT Bold" size="22.0" />
+                    </font>
+                </Label>
+
+                <HBox alignment="CENTER_RIGHT" spacing="15.0" />
+            <TableView fx:id="tableVoyages" prefHeight="256.0" prefWidth="757.0">
+              <columns>
+                <TableColumn id="colId" fx:id="colId" prefWidth="90.00000190734863" text="ID_voyage" />
+                  <TableColumn id="colMontant" fx:id="colMontant" prefWidth="116.6666488647461" text="Montant" />
+                  <TableColumn id="colTypeVoyage" fx:id="colTypeVoyage" minWidth="3.3333587646484375" prefWidth="140.6667022705078" text="Type" />
+                  <TableColumn id="colDateDepart" fx:id="colDateDepart" prefWidth="146.666748046875" text="date départ" />
+                  <TableColumn id="colDateRetour" fx:id="colDateRetour" prefWidth="148.6666259765625" text="date retour" />
+                  <TableColumn id="colDateRetour" fx:id="colIdClient" prefWidth="113.33331298828125" text="ID_client" />
+              </columns>
+            </TableView>
+                  <Label fx:id="lblTotalVoyages" prefHeight="27.0" prefWidth="117.0" text="Total: 0 voyages" textFill="#1a7fa1">
+                      <font>
+                          <Font name="System Bold" size="14.0" />
+                      </font>
+                  </Label>
+            </children>
+        </VBox>
+    </center>
+    <bottom>
+        <HBox alignment="CENTER_RIGHT" prefHeight="71.0" prefWidth="895.0" spacing="10.0" style="-fx-padding: 15px; -fx-background-color: #f8f7ef;" BorderPane.alignment="CENTER">
+            <children>
+            <Button fx:id="btnRafraichir" mnemonicParsing="false" onAction="#rafraichir" prefHeight="37.0" prefWidth="113.0" style="-fx-background-color: #1a7fa1;" text="Rafraichir" textFill="WHITE">
+               <font>
+                  <Font name="System Bold" size="13.0" />
+               </font>
+            </Button>
+                <Button fx:id="btnModifier" mnemonicParsing="false" onAction="#modifierVoyage" prefHeight="35.0" prefWidth="120.0" style="-fx-background-color: #4296c5; -fx-text-fill: white; -fx-font-weight: bold;" text="Modifier">
+                    <font>
+                        <Font name="System Bold" size="13.0" />
+                    </font>
+                </Button>
+                <Button fx:id="btnSupprimer" mnemonicParsing="false" onAction="#supprimerVoyage" prefHeight="35.0" prefWidth="120.0" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold;" text="Supprimer">
+                    <font>
+                        <Font name="System Bold" size="13.0" />
+                    </font>
+                </Button>
+                <Button fx:id="btnFermer" cancelButton="true" mnemonicParsing="false" onAction="#handleFermer" prefHeight="35.0" prefWidth="107.0" style="-fx-background-color: #afc5c8;" text="Fermer">
+                    <font>
+                        <Font name="System Bold" size="13.0" />
+                    </font>
+                </Button>
+            </children>
+        </HBox>
+    </bottom>
+</BorderPane>

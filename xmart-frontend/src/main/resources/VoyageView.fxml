@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane prefHeight="500.0" prefWidth="700.0" style="-fx-background-color: #f5f7fa;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.ezip.ing1.pds.GestionVoyage">
+    <bottom>
+        <HBox alignment="CENTER_RIGHT" prefHeight="107.0" prefWidth="679.0" spacing="10.0" style="-fx-padding: 20px; -fx-background-color: #f8f7ef;" BorderPane.alignment="CENTER">
+            <children>
+            <Button mnemonicParsing="false" onAction="#handleListeVoyages" prefHeight="37.0" prefWidth="133.0" style="-fx-background-color: #1a7fa1;" text="Afficher Voyages" textFill="#fbfbfb">
+               <font>
+                  <Font name="System Bold" size="13.0" />
+               </font>
+            </Button>
+            <HBox prefHeight="54.0" prefWidth="291.0" />
+                <Button fx:id="btnAnnuler" cancelButton="true" mnemonicParsing="false" onAction="#handleAnnuler" prefHeight="36.0" prefWidth="107.0" style="-fx-background-color: #afc5c8;" text="Annuler">
+                    <font>
+                        <Font name="System Bold" size="13.0" />
+                    </font></Button>
+                <Button fx:id="btnEnregistrer" defaultButton="true" mnemonicParsing="false" onAction="#handleEnregistrer" prefHeight="35.0" prefWidth="123.0" style="-fx-background-color: #1a7fa1; -fx-text-fill: white;" text="Enregistrer">
+                    <font>
+                        <Font name="System Bold" size="13.0" />
+                    </font></Button>
+            </children>
+        </HBox>
+    </bottom>
+   <top>
+      <HBox prefHeight="67.0" prefWidth="700.0" style="-fx-background-color: #1a7fa1;" BorderPane.alignment="CENTER">
+         <children>
+            <HBox prefHeight="83.0" prefWidth="700.0" spacing="10.0">
+               <children>
+                  <ImageView fitHeight="59.0" fitWidth="55.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="/avion.png" />
+                     </image>
+                  </ImageView>
+                  <Label prefHeight="63.0" prefWidth="198.0" text="ESPACE VOYAGE" textFill="WHITE">
+                     <font>
+                        <Font name="Bell MT Bold" size="23.0" />
+                     </font>
+                  </Label>
+               </children>
+            </HBox>
+         </children>
+      </HBox>
+   </top>
+   <left>
+        <VBox prefHeight="374.0" prefWidth="697.0" spacing="5.0" style="-fx-background-color: #f8f7ef;" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+            </padding>
+            <children>
+                <Label text="Créer un Voyage" textFill="#1a7fa1">
+                    <font>
+                        <Font name="Bell MT Bold" size="22.0" />
+                    </font>
+                </Label>
+                <HBox prefHeight="40.0" prefWidth="657.0" spacing="10.0">
+                    <children>
+                        <VBox prefHeight="25.0" prefWidth="45.0" spacing="5.0">
+                            <children>
+                                <Label prefHeight="25.0" prefWidth="55.0" text="Client:">
+                                    <font>
+                                        <Font name="System Bold" size="14.0" />
+                                    </font></Label>
+                            </children>
+                        </VBox>
+                        <TextField fx:id="txtClient" prefHeight="46.0" prefWidth="199.0" promptText="Nom" />
+                        <Button fx:id="btnRechercheClient" mnemonicParsing="false" onAction="#handleRechercheClient" style="-fx-background-color: #1a7fa1; -fx-text-fill: white;" text="Rechercher" />
+                    </children>
+                </HBox>
+                <HBox spacing="15.0">
+                    <children>
+                        <VBox prefWidth="300.0" spacing="5.0">
+                            <children>
+                                <Label text="Départ:">
+                                    <font>
+                                        <Font name="System Bold" size="13.0" />
+                                    </font></Label>
+                                <DatePicker fx:id="dpDepart" prefWidth="300.0" promptText="Sélectionner une date" />
+                            </children>
+                        </VBox>
+                        <VBox prefWidth="300.0" spacing="5.0">
+                            <children>
+                                <Label text="Retour:">
+                                    <font>
+                                        <Font name="System Bold" size="13.0" />
+                                    </font></Label>
+                                <DatePicker fx:id="dpRetour" prefWidth="300.0" promptText="Sélectionner une date" />
+                            </children>
+                        </VBox>
+                    </children>
+                </HBox>
+                <VBox prefHeight="72.0" prefWidth="637.0" spacing="5.0">
+                    <children>
+                        <Label text="Type voyage:">
+                            <font>
+                                <Font name="System Bold" size="13.0" />
+                            </font></Label>
+                        <ComboBox fx:id="cbTypeVoyage" prefHeight="25.0" prefWidth="215.0" promptText="Sélectionner un type" style="-fx-background-color: #afc5c8;" />
+                    </children>
+                </VBox>
+                <VBox prefHeight="103.0" prefWidth="629.0" spacing="5.0">
+                    <children>
+                        <VBox prefHeight="43.0" prefWidth="637.0" spacing="5.0">
+                            <children>
+                                <Label prefHeight="55.0" prefWidth="97.0" text="Destination:">
+                                    <font>
+                                        <Font name="System Bold" size="13.0" />
+                                    </font>
+                                </Label>
+                        <ComboBox fx:id="cbDestinations" prefHeight="25.0" prefWidth="217.0" promptText="Choisir une destination..." style="-fx-background-color: #afc5c8;" />
+                            </children>
+                        </VBox>
+                        <Label text="Montant (€):">
+                            <font>
+                                <Font name="System Bold" size="13.0" />
+                            </font>
+                        </Label>
+                        <TextField fx:id="txtMontant" editable="false" promptText="0.00" />
+                    </children>
+                </VBox>
+            </children>
+        </VBox>
+   </left>
+</BorderPane>

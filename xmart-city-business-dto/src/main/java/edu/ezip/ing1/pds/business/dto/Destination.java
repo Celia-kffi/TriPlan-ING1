@@ -14,28 +14,31 @@ public class Destination {
     private String pays;
     private String ville;
     private String climat;
+    private double prixParJour;
 
 
     public Destination() {
     }
 
-    public Destination(String idDestination, String pays, String ville, String climat) {
+    public Destination(String idDestination, String pays, String ville, String climat, Double prixParJour) {
         this.idDestination = idDestination;
         this.pays = pays;
         this.ville = ville;
         this.climat = climat;
+        this.prixParJour = 0.0;
     }
 
-    public Destination(String pays, String ville, String climat) {
+    public Destination(String pays, String ville, String climat, double prixParJour) {
         this.pays = pays;
         this.ville = ville;
         this.climat = climat;
+        this.prixParJour = 0.0;
     }
 
 
     public final Destination build(final ResultSet resultSet)
             throws SQLException, NoSuchFieldException, IllegalAccessException {
-        setFieldsFromResultSet(resultSet, "idDestination", "pays", "ville", "climat");
+        setFieldsFromResultSet(resultSet, "idDestination", "pays", "ville", "climat","prix_par_jour");
         return this;
     }
 
@@ -61,6 +64,10 @@ public class Destination {
     public String getClimat() {
         return climat;
     }
+    public double getPrixParJour() {
+        return prixParJour;
+
+    }
 
 
     @JsonProperty("id_destination")
@@ -81,6 +88,10 @@ public class Destination {
     @JsonProperty("climat")
     public void setClimat(String climat) {
         this.climat = climat;
+    }
+    @JsonProperty("prixParJour")
+    public void setPrixParJour(double prixParJour) {
+        this.prixParJour = prixParJour;
     }
 
 
@@ -112,6 +123,7 @@ public class Destination {
                 ", pays='" + pays + '\'' +
                 ", ville='" + ville + '\'' +
                 ", climat='" + climat + '\'' +
+                ", prixParJour=" + prixParJour +
                 '}';
     }
 }

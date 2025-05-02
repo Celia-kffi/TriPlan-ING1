@@ -16,7 +16,7 @@
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="579.0" prefWidth="862.0" style="-fx-background-color: #f8f7ef;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.ezip.ing1.pds.GestionClientsController">
     <children>
-        <!-- Titre en haut avec couleur différente -->
+
         <Rectangle fill="#1a7b8e" height="72.0" layoutX="0.0" layoutY="0.0" stroke="TRANSPARENT" strokeType="INSIDE" width="862.0" />
         <Label layoutX="68.0" layoutY="21.0" text="ESPACE CLIENT" textFill="WHITE">
             <font>
@@ -24,7 +24,7 @@
             </font>
         </Label>
 
-        <!-- Formulaire à gauche -->
+
         <VBox layoutX="22.0" layoutY="88.0" prefHeight="398.0" prefWidth="255.0" spacing="15.0">
             <children>
                 <Label text="Formulaire Client" textFill="#3e6d75">
@@ -76,7 +76,7 @@
             </children>
         </VBox>
 
-        <!-- Tableau à droite -->
+
         <VBox layoutX="322.0" layoutY="108.0" prefHeight="358.0" prefWidth="506.0">
             <children>
                 <Label text="Liste des Clients:" textFill="#3e6d75">
@@ -116,7 +116,7 @@
         </HBox>
       <ImageView fitHeight="51.0" fitWidth="67.0" layoutX="14.0" layoutY="10.0" pickOnBounds="true" preserveRatio="true">
          <image>
-            <Image url="@../../../../../icone.png" />
+            <Image url="/icone.png" />
          </image>
       </ImageView>
       <HBox layoutX="13.0" layoutY="527.0" prefHeight="51.0" prefWidth="273.0" spacing="20.0">

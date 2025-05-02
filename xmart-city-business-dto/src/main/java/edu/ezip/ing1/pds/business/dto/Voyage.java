@@ -16,40 +16,37 @@ public class Voyage {
     private String typeVoyage;
     private String dateDepart;
     private String dateRetour;
-    private int idEmpreinte;
     private int idClient;
 
     public Voyage() {
     }
-    public Voyage(int idVoyage, double montant, String typeVoyage, String dateDepart, String dateRetour, int idEmpreinte, int idClient) {
+    public Voyage(int idVoyage, double montant, String typeVoyage, String dateDepart, String dateRetour,int idClient) {
         this.idVoyage = idVoyage;
         this.montant = montant;
         this.typeVoyage = typeVoyage;
         this.dateDepart = dateDepart;
         this.dateRetour = dateRetour;
-        this.idEmpreinte = idEmpreinte;
         this.idClient = idClient;
     }
 
 
-    public Voyage(double montant, String typeVoyage, String dateDepart, String dateRetour, int idEmpreinte, int idClient) {
+    public Voyage(double montant, String typeVoyage, String dateDepart, String dateRetour, int idClient) {
         this.montant = montant;
         this.typeVoyage = typeVoyage;
         this.dateDepart = dateDepart;
         this.dateRetour = dateRetour;
-        this.idEmpreinte = idEmpreinte;
         this.idClient = idClient;
     }
 
     public final Voyage build(final ResultSet resultSet)
             throws SQLException, NoSuchFieldException, IllegalAccessException {
-        setFieldsFromResultSet(resultSet, "idVoyage", "montant", "typeVoyage", "dateDepart", "dateRetour", "idEmpreinte", "idClient");
+        setFieldsFromResultSet(resultSet, "idVoyage", "montant", "typeVoyage", "dateDepart", "dateRetour", "idClient");
         return this;
     }
 
     public final PreparedStatement build(PreparedStatement preparedStatement)
             throws SQLException, NoSuchFieldException, IllegalAccessException {
-        return buildPreparedStatement(preparedStatement, montant, typeVoyage, dateDepart, dateRetour, idEmpreinte, idClient);
+        return buildPreparedStatement(preparedStatement, montant, typeVoyage, dateDepart, dateRetour, idClient);
     }
 
     public int getIdVoyage() { return idVoyage; }
@@ -57,7 +54,6 @@ public class Voyage {
     public String getTypeVoyage() { return typeVoyage; }
     public String getDateDepart() { return dateDepart; }
     public String getDateRetour() { return dateRetour; }
-    public int getIdEmpreinte() { return idEmpreinte; }
     public int getIdClient() { return idClient; }
 
     @JsonProperty("voyage_id")
@@ -74,9 +70,6 @@ public class Voyage {
 
     @JsonProperty("voyage_date_retour")
     public void setDateRetour(String dateRetour) { this.dateRetour = dateRetour; }
-
-    @JsonProperty("voyage_id_empreinte")
-    public void setIdEmpreinte(int idEmpreinte) { this.idEmpreinte = idEmpreinte; }
 
     @JsonProperty("voyage_id_client")
     public void setIdClient(int idClient) { this.idClient = idClient; }
@@ -106,7 +99,6 @@ public class Voyage {
                 ", typeVoyage='" + typeVoyage + '\'' +
                 ", dateDepart='" + dateDepart + '\'' +
                 ", dateRetour='" + dateRetour + '\'' +
-                ", idEmpreinte=" + idEmpreinte +
                 ", idClient=" + idClient +
                 '}';
     }

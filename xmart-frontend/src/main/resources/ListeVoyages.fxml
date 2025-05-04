@@ -34,14 +34,12 @@
                 <Insets bottom="20.0" left="30.0" right="30.0" top="20.0" />
             </padding>
             <children>
-                <Label prefHeight="27.0" prefWidth="195.0" text="Liste des Voyages" textFill="#1a7fa1">
+                <Label prefHeight="49.0" prefWidth="195.0" text="Liste des Voyages" textFill="#1a7fa1">
                     <font>
                         <Font name="Bell MT Bold" size="22.0" />
                     </font>
                 </Label>
-
-                <HBox alignment="CENTER_RIGHT" spacing="15.0" />
-            <TableView fx:id="tableVoyages" prefHeight="256.0" prefWidth="757.0">
+            <TableView fx:id="tableVoyages" prefHeight="317.0" prefWidth="802.0">
               <columns>
                 <TableColumn id="colId" fx:id="colId" prefWidth="90.00000190734863" text="ID_voyage" />
                   <TableColumn id="colMontant" fx:id="colMontant" prefWidth="116.6666488647461" text="Montant" />
@@ -51,9 +49,9 @@
                   <TableColumn id="colDateRetour" fx:id="colIdClient" prefWidth="113.33331298828125" text="ID_client" />
               </columns>
             </TableView>
-                  <Label fx:id="lblTotalVoyages" prefHeight="27.0" prefWidth="117.0" text="Total: 0 voyages" textFill="#1a7fa1">
+                  <Label fx:id="lblTotalVoyages" prefHeight="27.0" prefWidth="125.0" text="Total: 0 voyages" textFill="#1a7fa1">
                       <font>
-                          <Font name="System Bold" size="14.0" />
+                          <Font name="System Bold" size="16.0" />
                       </font>
                   </Label>
             </children>
@@ -62,22 +60,22 @@
     <bottom>
         <HBox alignment="CENTER_RIGHT" prefHeight="71.0" prefWidth="895.0" spacing="10.0" style="-fx-padding: 15px; -fx-background-color: #f8f7ef;" BorderPane.alignment="CENTER">
             <children>
-            <Button fx:id="btnRafraichir" mnemonicParsing="false" onAction="#rafraichir" prefHeight="37.0" prefWidth="113.0" style="-fx-background-color: #1a7fa1;" text="Rafraichir" textFill="WHITE">
+                <Button fx:id="btnModifier" mnemonicParsing="false" onAction="#modifierVoyage" prefHeight="35.0" prefWidth="129.0" style="-fx-background-color: #4296c5; -fx-text-fill: white; -fx-font-weight: bold;" text=" Modifier Voyage">
+                    <font>
+                        <Font name="System Bold" size="13.0" />
+                    </font>
+                </Button>
+                <Button fx:id="btnSupprimer" mnemonicParsing="false" onAction="#supprimerVoyage" prefHeight="35.0" prefWidth="135.0" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold;" text=" Supprimer Voyage">
+                    <font>
+                        <Font name="System Bold" size="13.0" />
+                    </font>
+                </Button>
+            <Button fx:id="btnRafraichir" mnemonicParsing="false" onAction="#rafraichir" prefHeight="34.0" prefWidth="123.0" style="-fx-background-color: #1a7fa1; -fx-text-fill: white; -fx-font-weight: bold;" text="Rafraichir" textFill="WHITE">
                <font>
                   <Font name="System Bold" size="13.0" />
                </font>
             </Button>
-                <Button fx:id="btnModifier" mnemonicParsing="false" onAction="#modifierVoyage" prefHeight="35.0" prefWidth="120.0" style="-fx-background-color: #4296c5; -fx-text-fill: white; -fx-font-weight: bold;" text="Modifier">
-                    <font>
-                        <Font name="System Bold" size="13.0" />
-                    </font>
-                </Button>
-                <Button fx:id="btnSupprimer" mnemonicParsing="false" onAction="#supprimerVoyage" prefHeight="35.0" prefWidth="120.0" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold;" text="Supprimer">
-                    <font>
-                        <Font name="System Bold" size="13.0" />
-                    </font>
-                </Button>
-                <Button fx:id="btnFermer" cancelButton="true" mnemonicParsing="false" onAction="#handleFermer" prefHeight="35.0" prefWidth="107.0" style="-fx-background-color: #afc5c8;" text="Fermer">
+                <Button fx:id="btnFermer" cancelButton="true" mnemonicParsing="false" onAction="#handleFermer" prefHeight="35.0" prefWidth="117.0" style="-fx-background-color: #afc5c8; -fx-text-fill: black; -fx-font-weight: bold;" text="Fermer">
                     <font>
                         <Font name="System Bold" size="13.0" />
                     </font>

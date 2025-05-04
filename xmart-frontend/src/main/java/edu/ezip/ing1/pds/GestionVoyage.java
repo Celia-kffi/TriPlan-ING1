@@ -73,8 +73,8 @@ public class GestionVoyage {
     private void initialize() {
         cbTypeVoyage.getItems().addAll("Vacances", "Affaires", "Aventure", "Luxe");
         cbTypeVoyage.setValue("Vacances");
-        dpDepart.valueProperty().addListener((obs, oldDate, newDate) -> calculerMontant());
-        dpRetour.valueProperty().addListener((obs, oldDate, newDate) -> calculerMontant());
+        dpDepart.valueProperty().addListener((obs, oldDate, newDate) ->{ verifierDates(); calculerMontant();});
+        dpRetour.valueProperty().addListener((obs, oldDate, newDate) -> {verifierDates(); calculerMontant();});
         cbDestinations.valueProperty().addListener((obs, oldDest, newDest) -> calculerMontant());
 
         loadDestinations();
@@ -230,4 +230,13 @@ public class GestionVoyage {
         alert.setContentText(message);
         alert.showAndWait();
     }
+    private void verifierDates() {
+        if (dpDepart.getValue() != null && dpRetour.getValue() != null) {
+            if (!dpDepart.getValue().isBefore(dpRetour.getValue())) {
+                showAlert("Erreur de dates", "La date de retour doit être postérieur à la date de départ.");
+                txtMontant.clear();
+            }
+        }
+    }
+
 }

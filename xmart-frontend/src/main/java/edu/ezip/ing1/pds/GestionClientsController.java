@@ -5,6 +5,7 @@ import edu.ezip.ing1.pds.business.dto.Clients;
 import edu.ezip.ing1.pds.services.ClientService;
 import edu.ezip.ing1.pds.client.commons.ConfigLoader;
 import edu.ezip.ing1.pds.client.commons.NetworkConfig;
+import edu.ezip.ing1.pds.GestionVoyage;
 
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -222,8 +223,18 @@ public class GestionClientsController {
     @FXML
     private void ouvrirFenetreVoyage(ActionEvent event) {
         try{
+            Client clientSelectionne = tableClients.getSelectionModel().getSelectedItem();
+
+            if (clientSelectionne == null) {
+                showAlert(AlertType.WARNING, "Sélection requise", "Veuillez sélectionner un client d'abord", "");
+                return;
+            }
             FXMLLoader Loader = new FXMLLoader(getClass().getResource("/VoyageView.fxml"));
             Parent root = Loader.load();
+
+            GestionVoyage voyageController = Loader.getController();
+            voyageController.setClientSelectionne(clientSelectionne);
+
 
             Stage stage = new Stage();
             stage.setScene(new Scene(root));

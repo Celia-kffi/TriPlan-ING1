@@ -1,10 +1,11 @@
 #!/bin/bash
 
-cd xmart-frontend/target
-java -jar "xmart-frontend-1.0-SNAPSHOT-jar-with-dependencies.jar"
+cd xmart-frontend
+
+mvn javafx:run
 
 if [ $? -eq 0 ]; then
-    echo "lancement went successfully."
+    echo "Lancement effectué avec succès."
 else
-    echo "Error compiling file."
+    echo "Erreur lors du lancement de l'application."
 fi

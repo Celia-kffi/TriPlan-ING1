@@ -37,10 +37,15 @@ public class XMartCityService {
         DELETE_CLIENT("DELETE FROM clients WHERE id_client = ? "),
         UPDATE_CLIENT("UPDATE clients SET nom = ?, prenom = ?, age = ?, nationalite = ?, budget = ?, id_paiement = ? WHERE id_client = ?"),
 
-        SELECT_ALL_VOYAGES("SELECT id_voyage, montant, type_voyage, date_depart, date_retour, id_empreinte, id_client FROM voyages"),
-        INSERT_VOYAGE("INSERT INTO voyages (montant, type_voyage, date_depart, date_retour, id_empreinte, id_client) VALUES (?, ?, ?, ?, ?, ?)"),
+        SELECT_CLIENT_BY_NAME("SELECT id_client, nom, prenom, age, nationalite, budget, id_paiement FROM clients WHERE nom = ?"),
+
+        SELECT_ALL_DESTINATIONS("SELECT id_destination, pays, ville, climat, prix_par_jour FROM destinations "),
+
+
+        SELECT_ALL_VOYAGES("SELECT id_voyage, montant, type_voyage, date_depart, date_retour, id_client FROM voyages"),
+        INSERT_VOYAGE("INSERT INTO voyages (montant, type_voyage, date_depart, date_retour, id_client) VALUES (?, ?, ?, ?, ?)"),
         DELETE_VOYAGE("DELETE FROM voyages WHERE id_voyage = ?"),
-        UPDATE_VOYAGE("UPDATE voyages SET montant= ?,type_voyage=?, date_depart=?, date_retour=?, id_empreinte=?, id_client=? WHERE id_voyage = ? "),
+        UPDATE_VOYAGE("UPDATE voyages SET montant= ?,type_voyage=?, date_depart=?, date_retour=?, id_client=? WHERE id_voyage = ? "),
 
         SELECT_ALL_EMPREINTES("SELECT id_empreinte, empreinte_kgCO2 FROM empreinte_carbone"),
         INSERT_EMPREINTE("INSERT INTO empreinte_carbone (empreinte_kgCO2) VALUES (?)"),
@@ -96,6 +101,10 @@ public class XMartCityService {
             case UPDATE_CLIENT:
                 response = updateClient(request, connection);
                 break;
+            case SELECT_CLIENT_BY_NAME:
+                response = selectClientByName(request, connection);
+                break;
+
             case SELECT_ALL_VOYAGES:
                 response=selectAllVoyages(request,connection);
                 break;
@@ -107,6 +116,10 @@ public class XMartCityService {
                 break;
             case UPDATE_VOYAGE:
                 response=updateVoyage(request,connection);
+                break;
+
+            case SELECT_ALL_DESTINATIONS:
+                response=selectAllDestinations(request,connection);
                 break;
 
             case SELECT_ALL_EMPREINTES:
@@ -271,6 +284,57 @@ public class XMartCityService {
         }
     }
 
+    private Response selectClientByName(final Request request, final Connection connection) throws SQLException, IOException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        //Client client = objectMapper.readValue(request.getRequestBody(), Client.class);
+
+        String name = objectMapper.readValue(request.getRequestBody(), String.class);
+
+        final PreparedStatement stmt = connection.prepareStatement(Queries.SELECT_CLIENT_BY_NAME.query);
+        stmt.setString(1, name);
+
+        final ResultSet res = stmt.executeQuery();
+        Clients clients = new Clients();
+
+
+        while (res.next()) {
+            Client client = new Client();
+            client.setIdClient(res.getInt(1));
+            client.setNom(res.getString(2));
+            client.setPrenom(res.getString(3));
+            client.setAge(res.getInt(4));
+            client.setNationalite(res.getString(5));
+            client.setBudget(res.getDouble(6));
+            client.setIdPaiement(res.getString(7));
+            clients.add(client);
+        }
+
+        return new Response(request.getRequestId(), objectMapper.writeValueAsString(clients));
+    }
+
+    private Response selectAllDestinations(final Request request, final Connection connection) throws SQLException, JsonProcessingException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final Statement stmt = connection.createStatement();
+        final ResultSet res = stmt.executeQuery(Queries.SELECT_ALL_DESTINATIONS.query);
+        Destinations destinations = new Destinations();
+
+        while (res.next()) {
+            Destination destination = new Destination();
+            destination.setIdDestination(res.getString(1));
+            destination.setPays(res.getString(2));
+            destination.setVille(res.getString(3));
+            destination.setClimat(res.getString(4));
+            destination.setPrixParJour(res.getDouble(5));
+            destinations.add(destination);
+        }
+
+        return new Response(request.getRequestId(), objectMapper.writeValueAsString(destinations));
+    }
+
+
+
+
+
     private Response selectAllVoyages(final Request request, final Connection connection) throws SQLException, JsonProcessingException {
         final ObjectMapper objectMapper = new ObjectMapper();
         final Statement stmt = connection.createStatement();
@@ -283,8 +347,7 @@ public class XMartCityService {
             voyage.setTypeVoyage(res.getString(3));
             voyage.setDateDepart(res.getString(4));
             voyage.setDateRetour(res.getString(5));
-            voyage.setIdEmpreinte(res.getInt(6));
-            voyage.setIdClient(res.getInt(7));
+            voyage.setIdClient(res.getInt(6));
             voyages.add(voyage);
         }
         return new Response(request.getRequestId(), objectMapper.writeValueAsString(voyages));
@@ -299,8 +362,7 @@ public class XMartCityService {
         stmt.setString(2, voyage.getTypeVoyage());
         stmt.setString(3, voyage.getDateDepart());
         stmt.setString(4, voyage.getDateRetour());
-        stmt.setInt(5, voyage.getIdEmpreinte());
-        stmt.setInt(6, voyage.getIdClient());
+        stmt.setInt(5, voyage.getIdClient());
         stmt.executeUpdate();
 
         ResultSet generatedKeys = stmt.getGeneratedKeys();
@@ -335,9 +397,8 @@ public class XMartCityService {
         stmt.setString(2, voyage.getTypeVoyage());
         stmt.setString(3, voyage.getDateDepart());
         stmt.setString(4, voyage.getDateRetour());
-        stmt.setInt(5, voyage.getIdEmpreinte());
-        stmt.setInt(6, voyage.getIdClient());
-        stmt.setInt(7, voyage.getIdVoyage());
+        stmt.setInt(5, voyage.getIdClient());
+        stmt.setInt(6, voyage.getIdVoyage());
         int rowsAffected = stmt.executeUpdate();
 
         if (rowsAffected > 0) {

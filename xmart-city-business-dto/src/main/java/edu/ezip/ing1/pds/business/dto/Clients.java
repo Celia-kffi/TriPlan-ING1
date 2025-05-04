@@ -29,7 +29,7 @@ public class Clients {
         if (clients != null) {
             this.clients = clients;
         } else {
-            this.clients = new LinkedHashSet<>(); // Initialisation par défaut si null
+            this.clients = new LinkedHashSet<>();
         }
     }
 

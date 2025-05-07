@@ -1,9 +1,6 @@
 package edu.ezip.ing1.pds;
 
-import edu.ezip.ing1.pds.business.dto.Client;
-import edu.ezip.ing1.pds.business.dto.Destination;
-import edu.ezip.ing1.pds.business.dto.Destinations;
-import edu.ezip.ing1.pds.business.dto.Voyage;
+import edu.ezip.ing1.pds.business.dto.*;
 import edu.ezip.ing1.pds.client.commons.ConfigLoader;
 import edu.ezip.ing1.pds.client.commons.NetworkConfig;
 import edu.ezip.ing1.pds.services.ClientService;
@@ -22,6 +19,7 @@ import javafx.stage.Stage;
 
 
 import java.io.IOException;
+import java.util.List;
 
 public class GestionVoyage {
 
@@ -194,6 +192,8 @@ public class GestionVoyage {
             showAlert("Erreur", "Une erreur est survenue lors de l'enregistrement du voyage.");
             e.printStackTrace();
         }
+
+        handleAnnuler(event);
     }
 
     @FXML

@@ -121,7 +121,7 @@ public class ClientService {
         final Request request = new Request();
         request.setRequestId(requestId);
         request.setRequestOrder(selectbynameRequestOrder);
-        request.setRequestContent("\""+ nom +"\"");
+        request.setRequestContent("\""+ nom.toLowerCase() +"\"");
         objectMapper.enable(SerializationFeature.WRAP_ROOT_VALUE);
         final byte[] requestBytes = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(request);
 

@@ -37,7 +37,7 @@ public class XMartCityService {
         DELETE_CLIENT("DELETE FROM clients WHERE id_client = ? "),
         UPDATE_CLIENT("UPDATE clients SET nom = ?, prenom = ?, age = ?, nationalite = ?, budget = ?, id_paiement = ? WHERE id_client = ?"),
 
-        SELECT_CLIENT_BY_NAME("SELECT id_client, nom, prenom, age, nationalite, budget, id_paiement FROM clients WHERE nom = ?"),
+        SELECT_CLIENT_BY_NAME("SELECT id_client, nom, prenom, age, nationalite, budget, id_paiement FROM clients WHERE LOWER(nom) = LOWER(?)"),
 
         SELECT_ALL_DESTINATIONS("SELECT id_destination, pays, ville, climat, prix_par_jour FROM destinations "),
 

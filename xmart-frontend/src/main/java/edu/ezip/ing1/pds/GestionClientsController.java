@@ -144,13 +144,25 @@ public class GestionClientsController {
     private void ajouterClient(ActionEvent event) {
         if (!validerFormulaire()) return;
 
-        try {
             String nom = txtNom.getText();
             String prenom = txtPrenom.getText();
             int age = Integer.parseInt(txtAge.getText());
             String nationalite = txtNationalite.getText();
             double budget = Double.parseDouble(txtBudget.getText());
             String idPaiement = txtIdPaiement.getText();
+
+        for (Client existingClient : tableClients.getItems()) {
+            if (existingClient.getNom().equalsIgnoreCase(nom) &&
+                    existingClient.getPrenom().equalsIgnoreCase(prenom) &&
+                    existingClient.getAge() == age &&
+                    existingClient.getNationalite().equalsIgnoreCase(nationalite)){
+                showAlert(AlertType.WARNING, "Doublon détecté", "Client déjà existant",
+                        "Un client avec les mêmes informations existe déjà.");
+                return;
+            }
+        }
+
+        try {
 
             Client client = new Client(nom, prenom, age, nationalite, budget, idPaiement);
             clientService.insertClient(client);

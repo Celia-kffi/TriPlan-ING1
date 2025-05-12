@@ -18,6 +18,7 @@ import javafx.event.ActionEvent;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -43,6 +44,7 @@ public class ListeVoyageController {
     private Label lblTotalVoyages;
 
     private VoyageService voyageService;
+
 
     public ListeVoyageController() throws IOException {
         try {
@@ -104,10 +106,7 @@ public class ListeVoyageController {
     private void modifierVoyage() {
         Voyage selectedVoyage = tableVoyages.getSelectionModel().getSelectedItem();
         if (selectedVoyage != null) {
-            TextInputDialog dialogMontant = new TextInputDialog(String.valueOf(selectedVoyage.getMontant()));
-            dialogMontant.setTitle("Modifier Voyage");
-            dialogMontant.setHeaderText("Montant :");
-            String montant = dialogMontant.showAndWait().orElse(String.valueOf(selectedVoyage.getMontant()));
+
 
             TextInputDialog dialogTypeVoyage = new TextInputDialog(selectedVoyage.getTypeVoyage());
             dialogTypeVoyage.setTitle("Modifier Voyage");
@@ -124,20 +123,16 @@ public class ListeVoyageController {
             dialogDateRetour.setHeaderText("Date de retour (YYYY-MM-DD) :");
             String dateRetour = dialogDateRetour.showAndWait().orElse(selectedVoyage.getDateRetour().toString());
 
-            TextInputDialog dialogIdClient = new TextInputDialog(String.valueOf(selectedVoyage.getIdClient()));
-            dialogIdClient.setTitle("Modifier Voyage");
-            dialogIdClient.setHeaderText("ID Client :");
-            String idClient = dialogIdClient.showAndWait().orElse(String.valueOf(selectedVoyage.getIdClient()));
 
             try {
 
                 Voyage voyageModifie = new Voyage(
                         selectedVoyage.getIdVoyage(),
-                        Double.parseDouble(montant),
+                        selectedVoyage.getMontant(),
                         typeVoyage,
                         dateDepart,
                         dateRetour,
-                        Integer.parseInt(idClient)
+                        selectedVoyage.getIdClient()
                 );
 
 

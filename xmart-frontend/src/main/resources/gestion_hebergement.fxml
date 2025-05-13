@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="edu.ezip.ing1.pds.GestionHebergementController">
+    <top>
+        <Label text="Gestion des Hébergements" style="-fx-font-size: 20px; -fx-padding: 10px;" />
+    </top>
+
+    <center>
+        <TableView fx:id="tableHebergement">
+            <columns>
+                <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
+                <TableColumn fx:id="colPrix" text="Prix/Nuit" prefWidth="100"/>
+                <TableColumn fx:id="colNom" text="Nom" prefWidth="150"/>
+                <TableColumn fx:id="colType" text="Type" prefWidth="100"/>
+                <TableColumn fx:id="colImage" text="Image" prefWidth="100"/>
+            </columns>
+        </TableView>
+    </center>
+
+    <bottom>
+        <HBox spacing="10" alignment="CENTER">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <Button text="Ajouter" onAction="#onAjouter"/>
+            <Button text="Modifier" onAction="#onModifier"/>
+            <Button text="Supprimer" onAction="#onSupprimer"/>
+        </HBox>
+    </bottom>
+</BorderPane>

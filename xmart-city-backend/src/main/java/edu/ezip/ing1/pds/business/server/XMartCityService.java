@@ -51,8 +51,6 @@ public class XMartCityService {
         SELECT_ALL_EMPREINTES("SELECT id_empreinte, empreinte_kgCO2 FROM empreinte_carbone"),
         INSERT_EMPREINTE("INSERT INTO empreinte_carbone (empreinte_kgCO2) VALUES (?)"),
         DELETE_EMPREINTE("DELETE FROM empreinte_carbone WHERE id_empreinte = ?"),
-        SELECT_ALL_TRANSPORTS("SELECT id_transport, type_transport, facteur_emission FROM moyen_transports"),
-        INSERT_TRANSPORT("INSERT INTO moyen_transports (type_transport, description) VALUES (?, ?)"),
 
         INSERT_DESTINATION("INSERT INTO destinations (id_destination, pays, ville, climat, prix_par_jour) VALUES (?, ?, ?, ?, ?)"),
         UPDATE_DESTINATION("UPDATE destinations SET pays = ?, ville = ?, climat = ?, prix_par_jour = ? WHERE id_destination = ?"),
@@ -64,9 +62,20 @@ public class XMartCityService {
         UPDATE_ACTIVITE("UPDATE activite SET nom = ?, description = ?, prix = ?, image_path = ?, id_destination = ? WHERE id_activite = ?"),
         DELETE_ACTIVITE("DELETE FROM activite WHERE id_activite = ?"),
 
-        FIND_CLIENT_ID_BY_NOM_PRENOM("SELECT id_client FROM clients WHERE LOWER(nom) = LOWER(?) AND LOWER(prenom) = LOWER(?)");
+        FIND_CLIENT_ID_BY_NOM_PRENOM("SELECT id_client FROM clients WHERE LOWER(nom) = LOWER(?) AND LOWER(prenom) = LOWER(?)"),
 
 
+
+        SELECT_ALL_TRANSPORTS("SELECT id_moyen_destination, type_transports, facteur_emission FROM moyen_transports"),
+        INSERT_TRANSPORT("INSERT INTO moyen_transports (id_moyen_destination, type_transports, facteur_emission) VALUES (?, ?, ?)"),
+        DELETE_TRANSPORT("DELETE FROM moyen_transports WHERE id_moyen_destination = ?"),
+        UPDATE_TRANSPORT("UPDATE moyen_transports SET type_transports = ?, facteur_emission = ? WHERE id_moyen_destination = ?"),
+
+
+        SELECT_ALL_HEBERGEMENTS("SELECT id_hebergement, prix_nuit, nom_h, type , image FROM hebergement"),
+        INSERT_HEBERGEMENT("INSERT INTO hebergement (id_hebergement, prix_nuit, nom_h, type, image) VALUES (?, ?, ?, ?,?)"),
+        DELETE_HEBERGEMENT("DELETE FROM hebergement WHERE id_hebergement = ?"),
+        UPDATE_HEBERGEMENT("UPDATE hebergement SET prix_nuit = ?, nom_h = ?, type = ?, image=? WHERE id_hebergement = ?");
 
         private final String query;
 
@@ -121,20 +130,20 @@ public class XMartCityService {
                 break;
 
             case SELECT_ALL_VOYAGES:
-                response = selectAllVoyages(request, connection);
+                response=selectAllVoyages(request,connection);
                 break;
             case INSERT_VOYAGE:
-                response = insertVoyage(request, connection);
+                response=insertVoyage(request,connection);
                 break;
             case DELETE_VOYAGE:
-                response = deleteVoyage(request, connection);
+                response=deleteVoyage(request,connection);
                 break;
             case UPDATE_VOYAGE:
-                response = updateVoyage(request, connection);
+                response=updateVoyage(request,connection);
                 break;
 
             case SELECT_ALL_DESTINATIONS:
-                response = selectAllDestinations(request, connection);
+                response=selectAllDestinations(request,connection);
                 break;
 
             case SELECT_ALL_EMPREINTES:
@@ -143,6 +152,7 @@ public class XMartCityService {
             case INSERT_EMPREINTE:
                 response = InsertEmpreinte(request, connection);
                 break;
+
             case UPDATE_DESTINATION:
                 response = updateDestination(request, connection);
                 break;
@@ -165,15 +175,27 @@ public class XMartCityService {
                 response = deleteActivite(request, connection);
                 break;
 
-            /*case SELECT_ALL_TRANSPORTS:
+            case SELECT_ALL_TRANSPORTS:
                 response = SelectAllTransports(request, connection);
                 break;
             case INSERT_TRANSPORT:
                 response = InsertTransport(request, connection);
                 break;
-            case DELETE_EMPREINTE:
-                response = DeleteEmpreinte(request, connection);
-                break;*/
+            case UPDATE_TRANSPORT:
+                response = UpdateTransport(request, connection);
+                break;
+            case SELECT_ALL_HEBERGEMENTS:
+                response = SelectAllHebergements(request, connection);
+                break;
+            case INSERT_HEBERGEMENT:
+                response = InsertHebergement(request, connection);
+                break;
+            case DELETE_HEBERGEMENT:
+                response = DeleteHebergement(request, connection);
+                break;
+            case UPDATE_HEBERGEMENT:
+                response = UpdateHebergement(request, connection);
+                break;
             case FIND_CLIENT_ID_BY_NOM_PRENOM:
                 response =findClientIdByNomPrenom(request, connection);
             default:
@@ -206,11 +228,8 @@ public class XMartCityService {
 
     private Response insertAvis(final Request request, final Connection connection) throws SQLException, IOException {
         final ObjectMapper objectMapper = new ObjectMapper();
-
-        // Désérialisation de l'avis reçu
         final AvisClient avisClient = objectMapper.readValue(request.getRequestBody(), AvisClient.class);
 
-        // Insertion dans la base
         final PreparedStatement stmt = connection.prepareStatement(Queries.INSERT_AVIS.query);
         stmt.setInt(1, avisClient.getNote());
         stmt.setString(2, avisClient.getDateAvis());
@@ -235,7 +254,6 @@ public class XMartCityService {
         return new Response(request.getRequestId(), objectMapper.writeValueAsString(avisClient));
     }
 
-
     private Response selectAllAvis(final Request request, final Connection connection) throws SQLException, JsonProcessingException {
         final ObjectMapper objectMapper = new ObjectMapper();
         final Statement stmt = connection.createStatement();
@@ -246,7 +264,6 @@ public class XMartCityService {
         );
 
         AvisClients avisClients = new AvisClients();
-
         while (res.next()) {
             AvisClient avisClient = new AvisClient();
             avisClient.setIdAvis(res.getInt("id_avis"));
@@ -259,10 +276,8 @@ public class XMartCityService {
 
             avisClients.add(avisClient);
         }
-
         return new Response(request.getRequestId(), objectMapper.writeValueAsString(avisClients));
     }
-
 
     private Response deleteAvis(final Request request, final Connection connection) throws SQLException, IOException {
         final ObjectMapper objectMapper = new ObjectMapper();
@@ -304,7 +319,7 @@ public class XMartCityService {
             return new Response(request.getRequestId(), "Erreur lors de la récupération du client : " + e.getMessage());
         }
 
-        // ✅ Mise à jour de l'avis avec id_client mis à jour
+
         final PreparedStatement stmt = connection.prepareStatement(Queries.UPDATE_AVIS.query);
         stmt.setInt(1, avisClient.getNote());
         stmt.setString(2, avisClient.getDateAvis());
@@ -320,7 +335,6 @@ public class XMartCityService {
             return new Response(request.getRequestId(), "Avis introuvable ou aucune modification effectuée.");
         }
     }
-
 
     private Response selectAllClients(final Request request, final Connection connection) throws SQLException, JsonProcessingException {
         final ObjectMapper objectMapper = new ObjectMapper();
@@ -446,6 +460,9 @@ public class XMartCityService {
     }
 
 
+
+
+
     private Response selectAllVoyages(final Request request, final Connection connection) throws SQLException, JsonProcessingException {
         final ObjectMapper objectMapper = new ObjectMapper();
         final Statement stmt = connection.createStatement();
@@ -518,6 +535,7 @@ public class XMartCityService {
             return new Response(request.getRequestId(), "Voyage introuvable ou aucune modification effectuée.");
         }
     }
+
 
 
     private Response InsertEmpreinte(final Request request, final Connection connection) throws SQLException, IOException {
@@ -635,6 +653,142 @@ public class XMartCityService {
 
         return new Response(request.getRequestId(), mapper.writeValueAsString(activites));
     }
+    private Response SelectAllTransports(final Request request, final Connection connection) throws SQLException, JsonProcessingException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final Statement stmt = connection.createStatement();
+        final ResultSet res = stmt.executeQuery(Queries.SELECT_ALL_TRANSPORTS.query);
+        MoyenTransports transports = new MoyenTransports();
+        while (res.next()) {
+            MoyenTransport transport = new MoyenTransport();
+            transport.setIdMoyenDestination(res.getString(1));
+            transport.setTypeTransports(res.getString(2));
+            transport.setFacteurEmission(res.getDouble(3));
+            transports.add(transport);
+        }
+        return new Response(request.getRequestId(), objectMapper.writeValueAsString(transports));
+    }
+    private Response InsertTransport(final Request request, final Connection connection) throws SQLException, IOException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final MoyenTransport transport = objectMapper.readValue(request.getRequestBody(), MoyenTransport
+                .class);
+
+        final PreparedStatement stmt = connection.prepareStatement(Queries.INSERT_TRANSPORT.query, Statement.RETURN_GENERATED_KEYS);
+        stmt.setString(1, transport.getIdMoyenDestination());
+        stmt.setString(2, transport.getTypeTransports());
+        stmt.setDouble(3, transport.getFacteurEmission());
+
+        stmt.executeUpdate();
+
+        ResultSet generatedKeys = stmt.getGeneratedKeys();
+        if (generatedKeys.next()) {
+            transport.setIdMoyenDestination(generatedKeys.getString(1));
+        }
+
+        return new Response(request.getRequestId(), objectMapper.writeValueAsString(transport));
+    }
+    private Response DeleteTransport(final Request request, final Connection connection) throws SQLException, IOException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final MoyenTransport transport = objectMapper.readValue(request.getRequestBody(), MoyenTransport
+                .class);
+
+        final PreparedStatement stmt = connection.prepareStatement(Queries.DELETE_TRANSPORT.query);
+        stmt.setString(1, transport.getIdMoyenDestination());
+        int rowsAffected = stmt.executeUpdate();
+
+        if (rowsAffected > 0) {
+            return new Response(request.getRequestId(), "Moyen de transport supprimé avec succès.");
+        } else {
+            return new Response(request.getRequestId(), "Moyen de transport introuvable.");
+        }
+    }
+    private Response UpdateTransport(final Request request, final Connection connection) throws SQLException, IOException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final MoyenTransport transport = objectMapper.readValue(request.getRequestBody(), MoyenTransport.class);
+
+        final PreparedStatement stmt = connection.prepareStatement(Queries.UPDATE_TRANSPORT.query);
+        stmt.setString(1, transport.getIdMoyenDestination());
+        stmt.setString(2, transport.getTypeTransports());
+        stmt.setDouble(3, transport.getFacteurEmission());
+        int rowsAffected = stmt.executeUpdate();
+
+        if (rowsAffected > 0) {
+            return new Response(request.getRequestId(), "Moyen transport mis à jour avec succès.");
+        } else {
+            return new Response(request.getRequestId(), "Moyen transport introuvable ou aucune modification effectuée.");
+        }
+    }
+    private Response SelectAllHebergements(final Request request, final Connection connection) throws SQLException, JsonProcessingException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final Statement stmt = connection.createStatement();
+        final ResultSet res = stmt.executeQuery(Queries.SELECT_ALL_HEBERGEMENTS.query);
+        Hebergements hebergements = new Hebergements();
+        while (res.next()) {
+            Hebergement hebergement = new Hebergement();
+            hebergement.setIdHebergement(res.getInt(1));
+            hebergement.setPrixNuit(res.getInt(2));
+            hebergement.setNomH(res.getString(3));
+            hebergement.setType(res.getString(4));
+            hebergement.setImage(res.getString(5));
+            hebergements.add(hebergement);
+        }
+        return new Response(request.getRequestId(), objectMapper.writeValueAsString(hebergements));
+    }
+
+    private Response InsertHebergement(final Request request, final Connection connection) throws SQLException, IOException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final Hebergement hebergement = objectMapper.readValue(request.getRequestBody(), Hebergement.class);
+
+        final PreparedStatement stmt = connection.prepareStatement(Queries.INSERT_HEBERGEMENT.query, Statement.RETURN_GENERATED_KEYS);
+        stmt.setInt(1, hebergement.getIdHebergement());
+        stmt.setInt(2, hebergement.getPrixNuit());
+        stmt.setString(3, hebergement.getNomH());
+        stmt.setString(4, hebergement.getType());
+        stmt.setString(5, hebergement.getImage());
+        stmt.executeUpdate();
+
+        ResultSet generatedKeys = stmt.getGeneratedKeys();
+        if (generatedKeys.next()) {
+            hebergement.setIdHebergement(generatedKeys.getInt(1));
+        }
+
+        return new Response(request.getRequestId(), objectMapper.writeValueAsString(hebergement));
+    }
+
+    private Response DeleteHebergement(final Request request, final Connection connection) throws SQLException, IOException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final Hebergement hebergement = objectMapper.readValue(request.getRequestBody(), Hebergement.class);
+
+        final PreparedStatement stmt = connection.prepareStatement(Queries.DELETE_HEBERGEMENT.query);
+        stmt.setInt(1, hebergement.getIdHebergement());
+        int rowsAffected = stmt.executeUpdate();
+
+        if (rowsAffected > 0) {
+            return new Response(request.getRequestId(), "Hebergement supprimé avec succès.");
+        } else {
+            return new Response(request.getRequestId(), "Hebergement introuvable.");
+        }
+    }
+
+    private Response UpdateHebergement(final Request request, final Connection connection) throws SQLException, IOException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final Hebergement hebergement = objectMapper.readValue(request.getRequestBody(), Hebergement.class);
+
+        final PreparedStatement stmt = connection.prepareStatement(Queries.UPDATE_HEBERGEMENT.query);
+        stmt.setInt(1, hebergement.getIdHebergement());
+        stmt.setInt(2, hebergement.getPrixNuit());
+        stmt.setString(3, hebergement.getNomH());
+        stmt.setString(4, hebergement.getType());
+        stmt.setString(5, hebergement.getImage());
+        int rowsAffected = stmt.executeUpdate();
+
+        if (rowsAffected > 0) {
+            return new Response(request.getRequestId(), "Hebergement mis à jour avec succès.");
+        } else {
+            return new Response(request.getRequestId(), "Hebergement introuvable ou aucune modification effectuée.");
+        }
+    }
+
+
 
 
 

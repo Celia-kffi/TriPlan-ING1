@@ -21,8 +21,7 @@ public class InsertEmpreinteCarboneClientRequest extends ClientRequest<Empreinte
     @Override
     public String readResult(String body) throws IOException {
         final ObjectMapper mapper = new ObjectMapper();
-        final Map<String, Integer> empreinteCarboneIdMap = mapper.readValue(body, Map.class);
-        final String result=empreinteCarboneIdMap.get("id_empreinte").toString();
-        return result;
+        final Map<String, Integer>  empreinteIdMap = mapper.readValue(body, Map.class);
+        return empreinteIdMap.get("empreinte_id").toString();
     }
 }

@@ -5,164 +5,113 @@ import edu.ezip.ing1.pds.business.dto.Hebergements;
 import edu.ezip.ing1.pds.client.commons.ConfigLoader;
 import edu.ezip.ing1.pds.client.commons.NetworkConfig;
 import edu.ezip.ing1.pds.services.HebergementService;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class GestionHebergementController {
 
-    @FXML private TableView<Hebergement> tableHebergement;
-    @FXML private TableColumn<Hebergement, Integer> colId;
-    @FXML private TableColumn<Hebergement, Integer> colPrix;
-    @FXML private TableColumn<Hebergement, String> colNom;
-    @FXML private TableColumn<Hebergement, String> colType;
-    @FXML private TableColumn<Hebergement, String> colImage;
+    @FXML private HBox carouselBox;
+    @FXML private ImageView selectedImage;
+    @FXML private Label labelNom;
+    @FXML private Label labelPrix;
+    @FXML private Label labelType;
 
-    private ObservableList<Hebergement> hebergementList = FXCollections.observableArrayList();
     private HebergementService hebergementService;
+    private int currentIndex = 0;
+    private List<Hebergement> hebergementsList = new ArrayList<>();
 
     @FXML
     public void initialize() {
         try {
             NetworkConfig config = ConfigLoader.loadConfig(NetworkConfig.class, "network.yaml");
             hebergementService = new HebergementService(config);
+            loadHebergements();
         } catch (Exception e) {
             showAlert(Alert.AlertType.ERROR, "Erreur de configuration", e.getMessage());
-            return;
         }
-
-        initTableColumns();
-        loadHebergements();
-    }
-
-    private void initTableColumns() {
-        colId.setCellValueFactory(new PropertyValueFactory<>("idHebergement"));
-        colPrix.setCellValueFactory(new PropertyValueFactory<>("prixNuit"));
-        colNom.setCellValueFactory(new PropertyValueFactory<>("nomH"));
-        colType.setCellValueFactory(new PropertyValueFactory<>("type"));
-        colImage.setCellValueFactory(new PropertyValueFactory<>("image"));
-
-        colImage.setCellFactory(col -> new TableCell<>() {
-            private final ImageView imageView = new ImageView();
-
-            {
-                imageView.setFitWidth(50);
-                imageView.setFitHeight(50);
-                imageView.setPreserveRatio(true);
-            }
-
-            @Override
-            protected void updateItem(String imageName, boolean empty) {
-                super.updateItem(imageName, empty);
-                if (empty || imageName == null || imageName.isEmpty()) {
-                    setGraphic(null);
-                } else {
-                    try {
-                        Image img = new Image(getClass().getResource("/photo/" + imageName).toExternalForm());
-                        imageView.setImage(img);
-                        setGraphic(imageView);
-                    } catch (Exception e) {
-                        setGraphic(new Label("Erreur image"));
-                    }
-                }
-            }
-        });
-
-        tableHebergement.setItems(hebergementList);
     }
 
     private void loadHebergements() {
-        hebergementList.clear();
         try {
             Hebergements response = hebergementService.selectHebergement();
             if (response != null && response.getHebergements() != null) {
-                hebergementList.addAll(response.getHebergements());
+                hebergementsList = new ArrayList<>(response.getHebergements());
+                carouselBox.getChildren().clear();
+                for (int i = 0; i < hebergementsList.size(); i++) {
+                    Hebergement h = hebergementsList.get(i);
+                    StackPane stackPane = new StackPane();
+                    ImageView imageView = new ImageView();
+                    imageView.setFitWidth(120);
+                    imageView.setFitHeight(90);
+                    imageView.setPreserveRatio(true);
+
+
+                    try {
+                        Image image = new Image(getClass().getResource("/photo/" + h.getImage()).toExternalForm());
+                        imageView.setImage(image);
+                    } catch (Exception e) {
+                        imageView.setImage(new Image("https://via.placeholder.com/120x90.png?text=Erreur"));
+                    }
+                    imageView.setStyle("-fx-border-color: black; -fx-border-width: 3px; -fx-border-radius: 5px;");
+                    int finalI = i;
+                    imageView.setOnMouseClicked(event -> {
+                        currentIndex = finalI;
+                        updateCarousel();
+                    });
+
+                    carouselBox.getChildren().add(imageView);
+                }
+                if (!hebergementsList.isEmpty()) {
+                    updateCarousel();
+                }
             }
         } catch (Exception e) {
             showAlert(Alert.AlertType.ERROR, "Erreur chargement", e.getMessage());
         }
     }
 
-    @FXML
-    private void onAjouter() {
+    private void showHebergementDetails(Hebergement h) {
         try {
-            int id = Integer.parseInt(prompt("ID de l'hébergement :"));
-            int prix = Integer.parseInt(prompt("Prix par nuit :"));
-            String nom = prompt("Nom :");
-            String type = prompt("Type :");
-            String image = prompt("Nom de l'image (ex: hotel1.png) :");
-
-            Hebergement hebergement = new Hebergement(id, prix, nom, type, image);
-            hebergementService.insertHebergement(hebergement);
-            showAlert(Alert.AlertType.INFORMATION, "Ajout", "Hébergement ajouté !");
-            loadHebergements();
+            Image image = new Image(getClass().getResource("/photo/" + h.getImage()).toExternalForm());
+            selectedImage.setImage(image);
         } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur ajout", e.getMessage());
+            selectedImage.setImage(new Image("https://via.placeholder.com/200.png?text=Erreur"));
+        }
+
+        labelNom.setText("Nom : " + h.getNomH());
+        labelPrix.setText("Prix/nuit : " + h.getPrixNuit() + " €");
+        labelType.setText("Type : " + h.getType());
+    }
+
+    @FXML
+    private void onScrollRight() {
+        if (currentIndex < hebergementsList.size() - 1) {
+            currentIndex++;
+            updateCarousel();
         }
     }
 
     @FXML
-    private void onModifier() {
-        Hebergement selected = tableHebergement.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert(Alert.AlertType.WARNING, "Aucune sélection", "Sélectionnez un hébergement à modifier.");
-            return;
-        }
-
-        try {
-            int prix = Integer.parseInt(prompt("Prix par nuit :", String.valueOf(selected.getPrixNuit())));
-            String nom = prompt("Nom :", selected.getNomH());
-            String type = prompt("Type :", selected.getType());
-            String image = prompt("Nom de l'image :", selected.getImage());
-
-            Hebergement updated = new Hebergement(selected.getIdHebergement(), prix, nom, type, image);
-            hebergementService.updateHebergement(updated);
-            showAlert(Alert.AlertType.INFORMATION, "Modification", "Hébergement modifié !");
-            loadHebergements();
-        } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur modification", e.getMessage());
+    private void onScrollLeft() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            updateCarousel();
         }
     }
 
-    @FXML
-    private void onSupprimer() {
-        Hebergement selected = tableHebergement.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert(Alert.AlertType.WARNING, "Aucune sélection", "Sélectionnez un hébergement à supprimer.");
-            return;
+    private void updateCarousel() {
+        if (!hebergementsList.isEmpty()) {
+            Hebergement current = hebergementsList.get(currentIndex);
+            showHebergementDetails(current);
         }
-
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Supprimer cet hébergement ?", ButtonType.YES, ButtonType.NO);
-        confirm.setHeaderText("Confirmation");
-        confirm.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.YES) {
-                try {
-                    hebergementService.deleteHebergement(selected);
-                    showAlert(Alert.AlertType.INFORMATION, "Suppression", "Hébergement supprimé !");
-                    loadHebergements();
-                } catch (Exception e) {
-                    showAlert(Alert.AlertType.ERROR, "Erreur suppression", e.getMessage());
-                }
-            }
-        });
-    }
-
-    private String prompt(String message) {
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setHeaderText(message);
-        dialog.showAndWait();
-        return dialog.getResult();
-    }
-
-    private String prompt(String message, String defaultValue) {
-        TextInputDialog dialog = new TextInputDialog(defaultValue);
-        dialog.setHeaderText(message);
-        dialog.showAndWait();
-        return dialog.getResult();
     }
 
     private void showAlert(Alert.AlertType type, String header, String content) {

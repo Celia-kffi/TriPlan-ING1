@@ -41,7 +41,7 @@ public class EmpreinteCarboneService {
         this.networkConfig = networkConfig;
     }
 
-    public void insertEmpreinteCarbonePublic(EmpreinteCarbone empreinteCarbone) throws InterruptedException, IOException, SQLException {
+    public void insertEmpreinte(EmpreinteCarbone empreinteCarbone) throws InterruptedException, IOException, SQLException {
         processEmpreinteCarbone(empreinteCarbone, insertRequestOrder);
     }
     public void deleteEmpreinte(EmpreinteCarbone empreinteCarbone) throws InterruptedException, IOException, SQLException  {
@@ -83,52 +83,30 @@ public class EmpreinteCarboneService {
     }
 
 
-    public EmpreintesCarbone selectEmpreintesCarbone() throws InterruptedException, IOException {
-        final Deque<ClientRequest> clientRequests = new ArrayDeque<>();
+    public EmpreintesCarbone selectEmpreinte() throws InterruptedException, IOException {
+        final Deque<ClientRequest> empreinteRequests = new ArrayDeque<>();
         final ObjectMapper objectMapper = new ObjectMapper();
 
         final String requestId = UUID.randomUUID().toString();
         final Request request = new Request();
         request.setRequestId(requestId);
         request.setRequestOrder(selectRequestOrder);
-
         objectMapper.enable(SerializationFeature.WRAP_ROOT_VALUE);
         final byte[] requestBytes = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(request);
-
-        // Log de la requête envoyée
         LoggingUtils.logDataMultiLine(logger, Level.TRACE, requestBytes);
 
-        // Création de la requête client pour l'appel à la méthode de sélection
-        final SelectAllEmpreinteCarboneClientRequest clientRequest = new SelectAllEmpreinteCarboneClientRequest(
+        final SelectAllEmpreinteCarboneClientRequest empreinteRequest = new SelectAllEmpreinteCarboneClientRequest(
                 networkConfig, 0, request, null, requestBytes);
+        empreinteRequests.push(empreinteRequest);
 
-        clientRequests.push(clientRequest);
-
-        if (!clientRequests.isEmpty()) {
-            // Traitement de la requête
-            final ClientRequest joinedClientRequest = clientRequests.pop();
-            joinedClientRequest.join();
-            logger.debug("Thread {} complete.", joinedClientRequest.getThreadName());
-
-            // Récupération du résultat de la requête
-            Object result = joinedClientRequest.getResult();
-
-            // Log du type du résultat récupéré
-            logger.debug("Type du résultat récupéré : " + (result != null ? result.getClass().getName() : "null"));
-
-            // Vérification du type de résultat
-            if (result instanceof EmpreintesCarbone) {
-                logger.debug("Résultat correctement mappé en EmpreintesCarbone.");
-                return (EmpreintesCarbone) result;
-            } else {
-                logger.error("Le résultat récupéré n'est pas de type EmpreintesCarbone.");
-                return null;
-            }
+        if (!empreinteRequests.isEmpty()) {
+            final ClientRequest joinedEmpreinteRequest = empreinteRequests.pop();
+            joinedEmpreinteRequest.join();
+            logger.debug("Thread {} complete.", joinedEmpreinteRequest.getThreadName());
+            return (EmpreintesCarbone) joinedEmpreinteRequest.getResult();
         } else {
-            // Log en cas d'absence de requête
-            logger.error("Aucune requête à traiter.");
+            logger.error("No empreintes found");
             return null;
         }
     }
-
 }

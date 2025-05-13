@@ -1,35 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.*?>
-<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="edu.ezip.ing1.pds.GestionHebergementController">
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/23.0.1" fx:controller="edu.ezip.ing1.pds.GestionHebergementController">
+
     <top>
-        <Label text="Gestion des Hébergements" style="-fx-font-size: 20px; -fx-padding: 10px;" />
+        <Label style="-fx-font-size: 20px; -fx-padding: 10px;" text="Gestion des Hébergements" BorderPane.alignment="CENTER" />
     </top>
 
     <center>
-        <TableView fx:id="tableHebergement">
-            <columns>
-                <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
-                <TableColumn fx:id="colPrix" text="Prix/Nuit" prefWidth="100"/>
-                <TableColumn fx:id="colNom" text="Nom" prefWidth="150"/>
-                <TableColumn fx:id="colType" text="Type" prefWidth="100"/>
-                <TableColumn fx:id="colImage" text="Image" prefWidth="100"/>
-            </columns>
-        </TableView>
+        <VBox alignment="CENTER" spacing="10" style="-fx-padding: 15;">
+            <ImageView fx:id="selectedImage" fitHeight="200" fitWidth="300.0" preserveRatio="true" style="-fx-border-color: black; -fx-border-width: 76px; -fx-border-radius: 40px;" />
+            <VBox alignment="CENTER_LEFT" spacing="5">
+                <Label fx:id="labelNom" text="Nom :" />
+                <Label fx:id="labelPrix" text="Prix/nuit :" />
+                <Label fx:id="labelType" text="Type :" />
+            </VBox>
+        </VBox>
     </center>
 
     <bottom>
-        <HBox spacing="10" alignment="CENTER">
-            <padding>
-                <Insets top="10" right="10" bottom="10" left="10"/>
-            </padding>
-            <Button text="Ajouter" onAction="#onAjouter"/>
-            <Button text="Modifier" onAction="#onModifier"/>
-            <Button text="Supprimer" onAction="#onSupprimer"/>
-        </HBox>
+        <VBox spacing="10" style="-fx-padding: 10;">
+            <HBox alignment="CENTER" spacing="10">
+                <Button onAction="#onScrollLeft" text="◀" />
+                <HBox fx:id="carouselBox" spacing="5" />
+                <Button onAction="#onScrollRight" text="▶" />
+            </HBox>
+        </VBox>
     </bottom>
+
 </BorderPane>

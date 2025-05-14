@@ -71,7 +71,7 @@ public class HebergementService {
             final ClientRequest processedRequest = hebergementRequests.pop();
             processedRequest.join();
             final Hebergement processedHebergement = (Hebergement) processedRequest.getInfo();
-            logger.debug("Thread {} complete : type={} nomH={} id={} prix={} image={} result={}",
+            logger.debug("Thread {} complete : type={} nomH={} id={} prix={} image={} emission_par_nuit{} result={}",
                     processedRequest.getThreadName(),
                     processedHebergement.getType(), processedHebergement.getNomH(),processedHebergement.getIdHebergement(),processedHebergement.getPrixNuit(),processedHebergement.getImage(),
                     processedRequest.getResult());

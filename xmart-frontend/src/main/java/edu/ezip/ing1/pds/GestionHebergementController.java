@@ -23,10 +23,17 @@ public class GestionHebergementController {
     @FXML private Label labelNom;
     @FXML private Label labelPrix;
     @FXML private Label labelType;
+    @FXML private Label labelEmission;
 
     private HebergementService hebergementService;
     private int currentIndex = 0;
     private List<Hebergement> hebergementsList = new ArrayList<>();
+
+    private EmpreinteCarboneController empreinteCarboneController;
+
+    public void setEmpreinteCarboneController(EmpreinteCarboneController controller) {
+        this.empreinteCarboneController = controller;
+    }
 
     @FXML
     public void initialize() {
@@ -53,13 +60,13 @@ public class GestionHebergementController {
                     imageView.setFitHeight(90);
                     imageView.setPreserveRatio(true);
 
-
                     try {
                         Image image = new Image(getClass().getResource("/photo/" + h.getImage()).toExternalForm());
                         imageView.setImage(image);
                     } catch (Exception e) {
                         imageView.setImage(new Image("https://via.placeholder.com/120x90.png?text=Erreur"));
                     }
+
                     imageView.setStyle("-fx-border-color: black; -fx-border-width: 3px; -fx-border-radius: 5px;");
                     int finalI = i;
                     imageView.setOnMouseClicked(event -> {
@@ -89,6 +96,7 @@ public class GestionHebergementController {
         labelNom.setText("Nom : " + h.getNomH());
         labelPrix.setText("Prix/nuit : " + h.getPrixNuit() + " €");
         labelType.setText("Type : " + h.getType());
+        labelEmission.setText("Emission/nuit : " + h.getEmissionParNuit() + " KgCO2");
     }
 
     @FXML
@@ -119,5 +127,19 @@ public class GestionHebergementController {
         alert.setHeaderText(header);
         alert.setContentText(content);
         alert.showAndWait();
+    }
+
+
+    @FXML
+    private void validerHebergement() {
+        if (!hebergementsList.isEmpty()) {
+            Hebergement selectionne = hebergementsList.get(currentIndex);
+            int nbNuits = 2;
+            if (empreinteCarboneController != null) {
+                empreinteCarboneController.setHebergementEtNuits(selectionne, nbNuits);
+            }
+
+            carouselBox.getScene().getWindow().hide();
+        }
     }
 }

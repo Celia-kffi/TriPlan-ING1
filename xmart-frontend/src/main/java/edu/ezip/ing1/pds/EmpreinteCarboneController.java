@@ -1,133 +1,97 @@
 package edu.ezip.ing1.pds;
 
-import edu.ezip.ing1.pds.business.dto.EmpreinteCarbone;
-import edu.ezip.ing1.pds.business.dto.EmpreintesCarbone;
-import edu.ezip.ing1.pds.client.commons.ConfigLoader;
-import edu.ezip.ing1.pds.client.commons.NetworkConfig;
-import edu.ezip.ing1.pds.services.EmpreinteCarboneService;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import edu.ezip.ing1.pds.business.dto.Hebergement;
+import edu.ezip.ing1.pds.business.dto.MoyenTransport;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.Label;
+import javafx.stage.Stage;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 
 public class EmpreinteCarboneController {
 
-    @FXML private TableView<EmpreinteCarbone> tableEmpreinte;
-    @FXML private TableColumn<EmpreinteCarbone, Integer> colId;
-    @FXML private TableColumn<EmpreinteCarbone, Double> colKgCO2;
+    private Hebergement hebergementSelectionne;
+    private MoyenTransport transportSelectionne;
+    private int nuits = 0;
+    private float distance = 0;
 
-    private ObservableList<EmpreinteCarbone> empreinteList = FXCollections.observableArrayList();
-    private EmpreinteCarboneService empreinteService;
+    @FXML private Label labelHebergement;
+    @FXML private Label labelTransport;
+    @FXML private Label labelDistance;
+    @FXML private Label labelNuits;
+    @FXML private Label resultatLabel;
 
     @FXML
     public void initialize() {
-        try {
-            NetworkConfig config = ConfigLoader.loadConfig(NetworkConfig.class, "network.yaml");
-            empreinteService = new EmpreinteCarboneService(config);
-        } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur de configuration", e.getMessage());
-            return;
-        }
-
-        initTableColumns();
-        loadEmpreintes();
+        updateAffichage();
     }
 
-    private void initTableColumns() {
-        colId.setCellValueFactory(new PropertyValueFactory<>("idEmpreinte"));
-        colKgCO2.setCellValueFactory(new PropertyValueFactory<>("empreinteKgCO2"));
-
-        tableEmpreinte.setItems(empreinteList);
+    private void updateAffichage() {
+        labelHebergement.setText("Hébergement : " + (hebergementSelectionne != null ? hebergementSelectionne.getNomH() : "Aucun"));
+        labelTransport.setText("Transport : " + (transportSelectionne != null ? transportSelectionne.getTypeTransports() : "Aucun"));
+        labelDistance.setText("Distance : " + distance + " km");
+        labelNuits.setText("Nuits : " + nuits);
     }
 
-    private void loadEmpreintes() {
-        empreinteList.clear();
+    @FXML
+    public void allerVersHebergement() {
         try {
-            EmpreintesCarbone response = empreinteService.selectEmpreinte();
-            if (response != null && response.getEmpreintesCarbone() != null) {
-                empreinteList.addAll(response.getEmpreintesCarbone());
-            }
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/gestion_hebergement.fxml")); // chemin correct
+            Parent root = loader.load();
+
+            GestionHebergementController controller = loader.getController();
+            controller.setEmpreinteCarboneController(this);
+
+            Stage stage = new Stage();
+            stage.setTitle("Choix Hébergement");
+            stage.setScene(new Scene(root));
+            stage.show();
         } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur chargement", e.getMessage());
+            e.printStackTrace();
         }
     }
 
     @FXML
-    private void onAjouter() {
+    public void allerVersTransport() {
         try {
-            int id = Integer.parseInt(prompt("ID de l'empreinte :"));
-            double kgCO2 = Double.parseDouble(prompt("Quantité de CO2 (kg) :"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/choix_transport.fxml")); // chemin correct
+            Parent root = loader.load();
 
-            EmpreinteCarbone empreinte = new EmpreinteCarbone(id, kgCO2);
-            empreinteService.insertEmpreinte(empreinte);
-            showAlert(Alert.AlertType.INFORMATION, "Ajout", "Empreinte carbone ajoutée !");
-            loadEmpreintes();
+            MoyenTransportController controller = loader.getController();
+            controller.setEmpreinteCarboneController(this);
+
+            Stage stage = new Stage();
+            stage.setTitle("Choix Transport");
+            stage.setScene(new Scene(root));
+            stage.show();
         } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur ajout", e.getMessage());
+            e.printStackTrace();
         }
     }
 
     @FXML
-    private void onModifier() {
-        EmpreinteCarbone selected = tableEmpreinte.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert(Alert.AlertType.WARNING, "Aucune sélection", "Sélectionnez une empreinte carbone à modifier.");
+    public void calculerEmpreinte() {
+        if (hebergementSelectionne == null || transportSelectionne == null) {
+            resultatLabel.setText("Veuillez d'abord choisir un hébergement et un transport.");
             return;
         }
 
-        try {
-            double kgCO2 = Double.parseDouble(prompt("Quantité de CO2 (kg) :", String.valueOf(selected.getEmpreinteKgCO2())));
-            EmpreinteCarbone updated = new EmpreinteCarbone(selected.getIdEmpreinte(), kgCO2);
-            empreinteService.updateEmpreinte(updated);
-            showAlert(Alert.AlertType.INFORMATION, "Modification", "Empreinte carbone modifiée !");
-            loadEmpreintes();
-        } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur modification", e.getMessage());
-        }
+        double total = hebergementSelectionne.getEmissionParNuit() * nuits +
+                transportSelectionne.getFacteurEmission() * distance;
+
+        resultatLabel.setText(String.format("Empreinte totale : %.2f KgCO2", total));
     }
 
-    @FXML
-    private void onSupprimer() {
-        EmpreinteCarbone selected = tableEmpreinte.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert(Alert.AlertType.WARNING, "Aucune sélection", "Sélectionnez une empreinte carbone à supprimer.");
-            return;
-        }
-
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Supprimer cette empreinte carbone ?", ButtonType.YES, ButtonType.NO);
-        confirm.setHeaderText("Confirmation");
-        confirm.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.YES) {
-                try {
-                    empreinteService.deleteEmpreinte(selected);
-                    showAlert(Alert.AlertType.INFORMATION, "Suppression", "Empreinte carbone supprimée !");
-                    loadEmpreintes();
-                } catch (Exception e) {
-                    showAlert(Alert.AlertType.ERROR, "Erreur suppression", e.getMessage());
-                }
-            }
-        });
+    public void setHebergementEtNuits(Hebergement h, int nuits) {
+        this.hebergementSelectionne = h;
+        this.nuits = nuits;
+        updateAffichage();
     }
 
-    private String prompt(String message) {
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setHeaderText(message);
-        dialog.showAndWait();
-        return dialog.getResult();
-    }
-
-    private String prompt(String message, String defaultValue) {
-        TextInputDialog dialog = new TextInputDialog(defaultValue);
-        dialog.setHeaderText(message);
-        dialog.showAndWait();
-        return dialog.getResult();
-    }
-
-    private void showAlert(Alert.AlertType type, String header, String content) {
-        Alert alert = new Alert(type);
-        alert.setHeaderText(header);
-        alert.setContentText(content);
-        alert.showAndWait();
+    public void setTransportEtDistance(MoyenTransport t, float distance) {
+        this.transportSelectionne = t;
+        this.distance = distance;
+        updateAffichage();
     }
 }

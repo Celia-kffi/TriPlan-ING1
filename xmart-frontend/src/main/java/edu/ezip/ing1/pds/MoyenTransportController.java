@@ -1,25 +1,36 @@
 package edu.ezip.ing1.pds;
 
+import javafx.scene.control.cell.PropertyValueFactory;
 import edu.ezip.ing1.pds.business.dto.MoyenTransport;
 import edu.ezip.ing1.pds.business.dto.MoyenTransports;
 import edu.ezip.ing1.pds.client.commons.ConfigLoader;
 import edu.ezip.ing1.pds.client.commons.NetworkConfig;
 import edu.ezip.ing1.pds.services.MoyenTransportService;
+import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.CheckBoxTableCell;
+import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.stage.Stage;
 
 public class MoyenTransportController {
 
-    @FXML private TableView<MoyenTransport> tableMoyenTransport;
-    @FXML private TableColumn<MoyenTransport, String> colId;
-    @FXML private TableColumn<MoyenTransport, String> colType;
-    @FXML private TableColumn<MoyenTransport, Double> colFacteurEmission;
+    @FXML private TableView<TransportSelection> tableMoyenTransport;
+    @FXML private TableColumn<TransportSelection, Boolean> colSelect;
+    @FXML private TableColumn<TransportSelection, String> colId;
+    @FXML private TableColumn<TransportSelection, String> colType;
+    @FXML private TableColumn<TransportSelection, Double> colFacteurEmission;
+    @FXML private TableColumn<TransportSelection, String> colDistance;
 
-    private ObservableList<MoyenTransport> moyenTransportList = FXCollections.observableArrayList();
+    private ObservableList<TransportSelection> selectionList = FXCollections.observableArrayList();
     private MoyenTransportService moyenTransportService;
+    private EmpreinteCarboneController empreinteCarboneController;
+
+    public void setEmpreinteCarboneController(EmpreinteCarboneController controller) {
+        this.empreinteCarboneController = controller;
+    }
 
     @FXML
     public void initialize() {
@@ -36,19 +47,36 @@ public class MoyenTransportController {
     }
 
     private void initTableColumns() {
-        colId.setCellValueFactory(new PropertyValueFactory<>("idMoyenDestination"));
-        colType.setCellValueFactory(new PropertyValueFactory<>("typeTransports"));
-        colFacteurEmission.setCellValueFactory(new PropertyValueFactory<>("facteurEmission"));
+        colSelect.setCellValueFactory(cellData -> cellData.getValue().selectedProperty());
+        colSelect.setCellFactory(CheckBoxTableCell.forTableColumn(colSelect));
 
-        tableMoyenTransport.setItems(moyenTransportList);
+        colId.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getTransport().getIdMoyenDestination()));
+        colType.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getTransport().getTypeTransports()));
+        colFacteurEmission.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getTransport().getFacteurEmission()));
+
+        colDistance.setCellValueFactory(cellData -> cellData.getValue().distanceProperty());
+        colDistance.setCellFactory(TextFieldTableCell.forTableColumn());
+
+
+        colDistance.setOnEditCommit(event -> {
+            TransportSelection ts = event.getRowValue();
+            if (!ts.selectedProperty().get()) { // Si la case n'est pas cochée
+                event.consume(); // Empêche l'édition de la distance
+                showAlert(Alert.AlertType.WARNING, "Sélection non cochée", "Veuillez cocher la case avant de saisir une distance.");
+            }
+        });
+
+        tableMoyenTransport.setItems(selectionList);
     }
 
     private void loadMoyensTransports() {
-        moyenTransportList.clear();
+        selectionList.clear();
         try {
             MoyenTransports response = moyenTransportService.selectTransport();
             if (response != null && response.getMoyenTransports() != null) {
-                moyenTransportList.addAll(response.getMoyenTransports());
+                for (MoyenTransport m : response.getMoyenTransports()) {
+                    selectionList.add(new TransportSelection(m));
+                }
             }
         } catch (Exception e) {
             showAlert(Alert.AlertType.ERROR, "Erreur chargement", e.getMessage());
@@ -56,77 +84,26 @@ public class MoyenTransportController {
     }
 
     @FXML
-    private void onAjouter() {
-        try {
-            String id = prompt("ID du moyen de transport :");
-            String type = prompt("Type de transport :");
-            double facteurEmission = Double.parseDouble(prompt("Facteur d'émission :"));
-
-            MoyenTransport moyenTransport = new MoyenTransport(id, type, facteurEmission);
-            moyenTransportService.insertTransport(moyenTransport);
-            showAlert(Alert.AlertType.INFORMATION, "Ajout", "Moyen de transport ajouté !");
-            loadMoyensTransports();
-        } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur ajout", e.getMessage());
-        }
-    }
-
-    @FXML
-    private void onModifier() {
-        MoyenTransport selected = tableMoyenTransport.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert(Alert.AlertType.WARNING, "Aucune sélection", "Sélectionnez un moyen de transport à modifier.");
-            return;
-        }
-
-        try {
-            String type = prompt("Type de transport :", selected.getTypeTransports());
-            double facteurEmission = Double.parseDouble(prompt("Facteur d'émission :", String.valueOf(selected.getFacteurEmission())));
-
-            MoyenTransport updated = new MoyenTransport(selected.getIdMoyenDestination(), type, facteurEmission);
-            moyenTransportService.updateTransport(updated);
-            showAlert(Alert.AlertType.INFORMATION, "Modification", "Moyen de transport modifié !");
-            loadMoyensTransports();
-        } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur modification", e.getMessage());
-        }
-    }
-
-    @FXML
-    private void onSupprimer() {
-        MoyenTransport selected = tableMoyenTransport.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert(Alert.AlertType.WARNING, "Aucune sélection", "Sélectionnez un moyen de transport à supprimer.");
-            return;
-        }
-
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Supprimer ce moyen de transport ?", ButtonType.YES, ButtonType.NO);
-        confirm.setHeaderText("Confirmation");
-        confirm.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.YES) {
+    private void onValider() {
+        float total = 0;
+        for (TransportSelection ts : selectionList) {
+            if (ts.selectedProperty().get()) {
                 try {
-                    moyenTransportService.deleteTransport(selected);
-                    showAlert(Alert.AlertType.INFORMATION, "Suppression", "Moyen de transport supprimé !");
-                    loadMoyensTransports();
-                } catch (Exception e) {
-                    showAlert(Alert.AlertType.ERROR, "Erreur suppression", e.getMessage());
+                    float km = Float.parseFloat(ts.distanceProperty().get());
+                    total += ts.getTransport().getFacteurEmission() * km;
+                } catch (NumberFormatException e) {
+                    showAlert(Alert.AlertType.ERROR, "Erreur", "Distance invalide pour " + ts.getTransport().getTypeTransports());
+                    return;
                 }
             }
-        });
-    }
+        }
 
-    private String prompt(String message) {
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setHeaderText(message);
-        dialog.showAndWait();
-        return dialog.getResult();
-    }
+        if (empreinteCarboneController != null) {
+            MoyenTransport synthese = new MoyenTransport("multiple", "Transports multiples", 1.0f); // Dummy
+            empreinteCarboneController.setTransportEtDistance(synthese, total);
+        }
 
-    private String prompt(String message, String defaultValue) {
-        TextInputDialog dialog = new TextInputDialog(defaultValue);
-        dialog.setHeaderText(message);
-        dialog.showAndWait();
-        return dialog.getResult();
+        ((Stage) tableMoyenTransport.getScene().getWindow()).close();
     }
 
     private void showAlert(Alert.AlertType type, String header, String content) {
@@ -134,5 +111,39 @@ public class MoyenTransportController {
         alert.setHeaderText(header);
         alert.setContentText(content);
         alert.showAndWait();
+    }
+
+    public class TransportSelection {
+        private MoyenTransport transport;
+        private BooleanProperty selected = new SimpleBooleanProperty(false);
+        private StringProperty distance = new SimpleStringProperty("");
+
+        public TransportSelection(MoyenTransport transport) {
+            this.transport = transport;
+        }
+
+        public MoyenTransport getTransport() {
+            return transport;
+        }
+
+        public StringProperty idMoyenDestinationProperty() {
+            return new SimpleStringProperty(transport.getIdMoyenDestination());
+        }
+
+        public StringProperty typeTransportsProperty() {
+            return new SimpleStringProperty(transport.getTypeTransports());
+        }
+
+        public DoubleProperty facteurEmissionProperty() {
+            return new SimpleDoubleProperty(transport.getFacteurEmission());
+        }
+
+        public BooleanProperty selectedProperty() {
+            return selected;
+        }
+
+        public StringProperty distanceProperty() {
+            return distance;
+        }
     }
 }

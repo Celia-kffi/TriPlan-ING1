@@ -73,10 +73,10 @@ public class XMartCityService {
         UPDATE_TRANSPORT("UPDATE moyen_transports SET type_transports = ?, facteur_emission = ? WHERE id_moyen_destination = ?"),
 
 
-        SELECT_ALL_HEBERGEMENTS("SELECT id_hebergement, prix_nuit, nom_h, type , image FROM hebergement"),
-        INSERT_HEBERGEMENT("INSERT INTO hebergement (id_hebergement, prix_nuit, nom_h, type, image) VALUES (?, ?, ?, ?,?)"),
+        SELECT_ALL_HEBERGEMENTS("SELECT id_hebergement, prix_nuit, nom_h, type , image, emission_par_nuit FROM hebergement"),
+        INSERT_HEBERGEMENT("INSERT INTO hebergement (id_hebergement, prix_nuit, nom_h, type, image ,emission_par_nuit) VALUES (?, ?, ?, ?,?)"),
         DELETE_HEBERGEMENT("DELETE FROM hebergement WHERE id_hebergement = ?"),
-        UPDATE_HEBERGEMENT("UPDATE hebergement SET prix_nuit = ?, nom_h = ?, type = ?, image=? WHERE id_hebergement = ?");
+        UPDATE_HEBERGEMENT("UPDATE hebergement SET prix_nuit = ?, nom_h = ?, type = ?, image=? , emission_par_nuit=? WHERE id_hebergement = ?");
 
         private final String query;
 
@@ -728,6 +728,7 @@ public class XMartCityService {
             hebergement.setNomH(res.getString(3));
             hebergement.setType(res.getString(4));
             hebergement.setImage(res.getString(5));
+            hebergement.setEmissionParNuit(res.getFloat(6));
             hebergements.add(hebergement);
         }
         return new Response(request.getRequestId(), objectMapper.writeValueAsString(hebergements));
@@ -743,6 +744,7 @@ public class XMartCityService {
         stmt.setString(3, hebergement.getNomH());
         stmt.setString(4, hebergement.getType());
         stmt.setString(5, hebergement.getImage());
+        stmt.setFloat(6, hebergement.getPrixNuit());
         stmt.executeUpdate();
 
         ResultSet generatedKeys = stmt.getGeneratedKeys();
@@ -778,6 +780,7 @@ public class XMartCityService {
         stmt.setString(3, hebergement.getNomH());
         stmt.setString(4, hebergement.getType());
         stmt.setString(5, hebergement.getImage());
+        stmt.setFloat(6, hebergement.getPrixNuit());
         int rowsAffected = stmt.executeUpdate();
 
         if (rowsAffected > 0) {

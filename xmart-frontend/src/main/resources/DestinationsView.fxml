@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="edu.ezip.ing1.pds.DestinationsController">
+
+    <top>
+        <Label text="Liste des Destinations"
+               style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;" />
+    </top>
+
+    <center>
+        <TableView fx:id="tableDestinations">
+            <columns>
+                <TableColumn fx:id="colId" text="ID Destination" prefWidth="100" />
+                <TableColumn fx:id="colVille" text="Ville" prefWidth="150" />
+                <TableColumn fx:id="colPays" text="Pays" prefWidth="150" />
+                <TableColumn fx:id="colClimat" text="Climat" prefWidth="150" />
+                <TableColumn fx:id="colPrixParJour" text="Prix par jour (€)" prefWidth="120" />
+            </columns>
+        </TableView>
+    </center>
+</BorderPane>

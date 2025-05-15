@@ -226,16 +226,16 @@ public class GestionVoyage {
     @FXML
     private void handleActivitees(ActionEvent event){
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(""));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/DestinationsView.fxml"));
             Parent root = loader.load();
             Scene scene = new Scene(root);
 
             Stage stage = new Stage();
-            stage.setTitle("Liste des voyages");
+            stage.setTitle("Activitees");
             stage.setScene(scene);
             stage.show();
         } catch (IOException e) {
-            showAlert("Erreur", "Une erreur est survenue lors de l'ouverture de la liste des voyages.");
+            showAlert("Erreur", "Une erreur est survenue lors de l'ouverture des activitées.");
             e.printStackTrace();
         }
 

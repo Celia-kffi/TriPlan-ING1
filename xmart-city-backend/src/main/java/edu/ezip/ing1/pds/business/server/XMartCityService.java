@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.ezip.ing1.pds.commons.Request;
 import edu.ezip.ing1.pds.commons.Response;
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class XMartCityService {
@@ -27,7 +28,7 @@ public class XMartCityService {
     private final Logger logger = LoggerFactory.getLogger(LoggingLabel);
 
     private enum Queries {
-        SELECT_ALL_AVIS("SELECT id_avis, note, date_avis, commentaires, id_client FROM avis_clients"),
+        SELECT_ALL_AVIS("SELECT a.id_avis, a.note, a.date_avis, a.commentaires,  a.id_client,  c.nom AS nom_client,  c.prenom AS prenom_cl FROM  avis_clien JOIN  clients c ON a.id_client = c.id_client"),
         INSERT_AVIS("INSERT INTO avis_clients (note, date_avis, commentaires, id_client) VALUES (?, ?, ?, ?)"),
         DELETE_AVIS("DELETE FROM avis_clients WHERE id_avis = ?"),
         UPDATE_AVIS("UPDATE avis_clients SET note = ?, date_avis = ?, commentaires = ? WHERE id_avis = ?"),
@@ -51,7 +52,21 @@ public class XMartCityService {
         INSERT_EMPREINTE("INSERT INTO empreinte_carbone (empreinte_kgCO2) VALUES (?)"),
         DELETE_EMPREINTE("DELETE FROM empreinte_carbone WHERE id_empreinte = ?"),
         SELECT_ALL_TRANSPORTS("SELECT id_transport, type_transport, facteur_emission FROM moyen_transports"),
-        INSERT_TRANSPORT("INSERT INTO moyen_transports (type_transport, description) VALUES (?, ?)");
+        INSERT_TRANSPORT("INSERT INTO moyen_transports (type_transport, description) VALUES (?, ?)"),
+
+        INSERT_DESTINATION("INSERT INTO destinations (id_destination, pays, ville, climat, prix_par_jour) VALUES (?, ?, ?, ?, ?)"),
+        UPDATE_DESTINATION("UPDATE destinations SET pays = ?, ville = ?, climat = ?, prix_par_jour = ? WHERE id_destination = ?"),
+        DELETE_DESTINATION("DELETE FROM destinations WHERE id_destination = ?"),
+
+        SELECT_ALL_ACTIVITES("SELECT id_activite, nom, description, prix, image_path, id_destination FROM activite"),
+        SELECT_ACTIVITES_BY_DESTINATION("SELECT id_activite, nom, description, prix, image_path, id_destination FROM activite WHERE id_destination = ?"),
+        INSERT_ACTIVITE("INSERT INTO activite (nom, description, prix, image_path, id_destination) VALUES (?, ?, ?, ?, ?)"),
+        UPDATE_ACTIVITE("UPDATE activite SET nom = ?, description = ?, prix = ?, image_path = ?, id_destination = ? WHERE id_activite = ?"),
+        DELETE_ACTIVITE("DELETE FROM activite WHERE id_activite = ?"),
+
+        FIND_CLIENT_ID_BY_NOM_PRENOM("SELECT id_client FROM clients WHERE LOWER(nom) = LOWER(?) AND LOWER(prenom) = LOWER(?)");
+
+
 
         private final String query;
 
@@ -106,20 +121,20 @@ public class XMartCityService {
                 break;
 
             case SELECT_ALL_VOYAGES:
-                response=selectAllVoyages(request,connection);
+                response = selectAllVoyages(request, connection);
                 break;
             case INSERT_VOYAGE:
-                response=insertVoyage(request,connection);
+                response = insertVoyage(request, connection);
                 break;
             case DELETE_VOYAGE:
-                response=deleteVoyage(request,connection);
+                response = deleteVoyage(request, connection);
                 break;
             case UPDATE_VOYAGE:
-                response=updateVoyage(request,connection);
+                response = updateVoyage(request, connection);
                 break;
 
             case SELECT_ALL_DESTINATIONS:
-                response=selectAllDestinations(request,connection);
+                response = selectAllDestinations(request, connection);
                 break;
 
             case SELECT_ALL_EMPREINTES:
@@ -128,6 +143,28 @@ public class XMartCityService {
             case INSERT_EMPREINTE:
                 response = InsertEmpreinte(request, connection);
                 break;
+            case UPDATE_DESTINATION:
+                response = updateDestination(request, connection);
+                break;
+            case DELETE_DESTINATION:
+                response = deleteDestination(request, connection);
+                break;
+            case SELECT_ALL_ACTIVITES:
+                response = selectAllActivites(request, connection);
+                break;
+            case SELECT_ACTIVITES_BY_DESTINATION:
+                response = selectActivitesByDestination(request, connection);
+                break;
+            case INSERT_ACTIVITE:
+                response = insertActivite(request, connection);
+                break;
+            case UPDATE_ACTIVITE:
+                response = updateActivite(request, connection);
+                break;
+            case DELETE_ACTIVITE:
+                response = deleteActivite(request, connection);
+                break;
+
             /*case SELECT_ALL_TRANSPORTS:
                 response = SelectAllTransports(request, connection);
                 break;
@@ -137,16 +174,43 @@ public class XMartCityService {
             case DELETE_EMPREINTE:
                 response = DeleteEmpreinte(request, connection);
                 break;*/
+            case FIND_CLIENT_ID_BY_NOM_PRENOM:
+                response =findClientIdByNomPrenom(request, connection);
             default:
                 break;
         }
         return response;
     }
+    private Response findClientIdByNomPrenom(final Request request, final Connection connection) throws SQLException, IOException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+
+        // On désérialise le body JSON ["Nom", "Prenom"]
+        final String[] nomPrenom = objectMapper.readValue(request.getRequestBody(), String[].class);
+        final String nom = nomPrenom[0];
+        final String prenom = nomPrenom[1];
+
+        final PreparedStatement stmt = connection.prepareStatement(
+                "SELECT id_client FROM clients WHERE LOWER(nom) = LOWER(?) AND LOWER(prenom) = LOWER(?)"
+        );
+        stmt.setString(1, nom);
+        stmt.setString(2, prenom);
+
+        final ResultSet rs = stmt.executeQuery();
+        if (rs.next()) {
+            int idClient = rs.getInt("id_client");
+            return new Response(request.getRequestId(), String.valueOf(idClient));
+        } else {
+            throw new SQLException("Client non trouvé avec nom: " + nom + " et prénom: " + prenom);
+        }
+    }
 
     private Response insertAvis(final Request request, final Connection connection) throws SQLException, IOException {
         final ObjectMapper objectMapper = new ObjectMapper();
+
+        // Désérialisation de l'avis reçu
         final AvisClient avisClient = objectMapper.readValue(request.getRequestBody(), AvisClient.class);
 
+        // Insertion dans la base
         final PreparedStatement stmt = connection.prepareStatement(Queries.INSERT_AVIS.query);
         stmt.setInt(1, avisClient.getNote());
         stmt.setString(2, avisClient.getDateAvis());
@@ -154,14 +218,35 @@ public class XMartCityService {
         stmt.setInt(4, avisClient.getIdClient());
         stmt.executeUpdate();
 
+        // Optionnel : récupérer le nom/prénom du client correspondant si nécessaire
+        final PreparedStatement getClientInfoStmt = connection.prepareStatement(
+                "SELECT nom, prenom FROM clients WHERE id_client = ?"
+        );
+        getClientInfoStmt.setInt(1, avisClient.getIdClient());
+
+        try (ResultSet rs = getClientInfoStmt.executeQuery()) {
+            if (rs.next()) {
+                avisClient.setNomClient(rs.getString("nom"));
+                avisClient.setPrenomClient(rs.getString("prenom"));
+            }
+        }
+
+        // Retourne l'avis inséré, avec nom/prénom ajoutés
         return new Response(request.getRequestId(), objectMapper.writeValueAsString(avisClient));
     }
+
 
     private Response selectAllAvis(final Request request, final Connection connection) throws SQLException, JsonProcessingException {
         final ObjectMapper objectMapper = new ObjectMapper();
         final Statement stmt = connection.createStatement();
-        final ResultSet res = stmt.executeQuery(Queries.SELECT_ALL_AVIS.query);
+
+        final ResultSet res = stmt.executeQuery(
+                "SELECT a.id_avis, a.note, a.date_avis, a.commentaires, a.id_client, c.nom AS nom_client, c.prenom AS prenom_client " +
+                        "FROM avis_clients a JOIN clients c ON a.id_client = c.id_client"
+        );
+
         AvisClients avisClients = new AvisClients();
+
         while (res.next()) {
             AvisClient avisClient = new AvisClient();
             avisClient.setIdAvis(res.getInt("id_avis"));
@@ -169,10 +254,15 @@ public class XMartCityService {
             avisClient.setDateAvis(res.getString("date_avis"));
             avisClient.setCommentaires(res.getString("commentaires"));
             avisClient.setIdClient(res.getInt("id_client"));
+            avisClient.setNomClient(res.getString("nom_client"));       // 💡 alias SQL !
+            avisClient.setPrenomClient(res.getString("prenom_client")); // 💡 alias SQL !
+
             avisClients.add(avisClient);
         }
+
         return new Response(request.getRequestId(), objectMapper.writeValueAsString(avisClients));
     }
+
 
     private Response deleteAvis(final Request request, final Connection connection) throws SQLException, IOException {
         final ObjectMapper objectMapper = new ObjectMapper();
@@ -194,11 +284,34 @@ public class XMartCityService {
         final ObjectMapper objectMapper = new ObjectMapper();
         final AvisClient avisClient = objectMapper.readValue(request.getRequestBody(), AvisClient.class);
 
+        // 🔍 Récupérer le bon id_client depuis nom/prénom si possible
+        int idClient = -1;
+
+        try {
+            final PreparedStatement getClientStmt = connection.prepareStatement(
+                    "SELECT id_client FROM clients WHERE LOWER(nom) = LOWER(?) AND LOWER(prenom) = LOWER(?)"
+            );
+            getClientStmt.setString(1, avisClient.getNomClient());
+            getClientStmt.setString(2, avisClient.getPrenomClient());
+
+            ResultSet rs = getClientStmt.executeQuery();
+            if (rs.next()) {
+                idClient = rs.getInt("id_client");
+            } else {
+                return new Response(request.getRequestId(), "Client introuvable : " + avisClient.getNomClient() + " " + avisClient.getPrenomClient());
+            }
+        } catch (SQLException e) {
+            return new Response(request.getRequestId(), "Erreur lors de la récupération du client : " + e.getMessage());
+        }
+
+        // ✅ Mise à jour de l'avis avec id_client mis à jour
         final PreparedStatement stmt = connection.prepareStatement(Queries.UPDATE_AVIS.query);
         stmt.setInt(1, avisClient.getNote());
         stmt.setString(2, avisClient.getDateAvis());
         stmt.setString(3, avisClient.getCommentaires());
-        stmt.setInt(4, avisClient.getIdAvis());
+        stmt.setInt(4, idClient);
+        stmt.setInt(5, avisClient.getIdAvis());
+
         int rowsAffected = stmt.executeUpdate();
 
         if (rowsAffected > 0) {
@@ -207,6 +320,7 @@ public class XMartCityService {
             return new Response(request.getRequestId(), "Avis introuvable ou aucune modification effectuée.");
         }
     }
+
 
     private Response selectAllClients(final Request request, final Connection connection) throws SQLException, JsonProcessingException {
         final ObjectMapper objectMapper = new ObjectMapper();
@@ -332,9 +446,6 @@ public class XMartCityService {
     }
 
 
-
-
-
     private Response selectAllVoyages(final Request request, final Connection connection) throws SQLException, JsonProcessingException {
         final ObjectMapper objectMapper = new ObjectMapper();
         final Statement stmt = connection.createStatement();
@@ -409,7 +520,6 @@ public class XMartCityService {
     }
 
 
-
     private Response InsertEmpreinte(final Request request, final Connection connection) throws SQLException, IOException {
         final ObjectMapper objectMapper = new ObjectMapper();
         final EmpreinteCarbone empreinteCarbone = objectMapper.readValue(request.getRequestBody(), EmpreinteCarbone.class);
@@ -463,7 +573,144 @@ public class XMartCityService {
         logger.info("Récupération de toutes les empreintes carbone : {} éléments trouvés", empreintesCarbone.getEmpreintesCarbone().size());
         return new Response(request.getRequestId(), objectMapper.writeValueAsString(empreintesCarbone));
     }
-}
 
+
+    private Response insertDestination(Request request, Connection connection) throws SQLException, IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        Destination d = mapper.readValue(request.getRequestBody(), Destination.class);
+        PreparedStatement stmt = connection.prepareStatement(Queries.INSERT_DESTINATION.query);
+        stmt.setString(1, d.getIdDestination());
+        stmt.setString(2, d.getPays());
+        stmt.setString(3, d.getVille());
+        stmt.setString(4, d.getClimat());
+        stmt.setDouble(5, d.getPrixParJour());
+        stmt.executeUpdate();
+        return new Response(request.getRequestId(), mapper.writeValueAsString(d));
+    }
+
+    private Response updateDestination(Request request, Connection connection) throws SQLException, IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        Destination d = mapper.readValue(request.getRequestBody(), Destination.class);
+        PreparedStatement stmt = connection.prepareStatement(Queries.UPDATE_DESTINATION.query);
+        stmt.setString(1, d.getPays());
+        stmt.setString(2, d.getVille());
+        stmt.setString(3, d.getClimat());
+        stmt.setDouble(4, d.getPrixParJour());
+        stmt.setString(5, d.getIdDestination());
+        int rows = stmt.executeUpdate();
+        return rows > 0
+                ? new Response(request.getRequestId(), "Destination mise à jour avec succès.")
+                : new Response(request.getRequestId(), "Destination introuvable ou aucune modification effectuée.");
+    }
+
+    private Response deleteDestination(Request request, Connection connection) throws SQLException, IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        Destination d = mapper.readValue(request.getRequestBody(), Destination.class);
+        PreparedStatement stmt = connection.prepareStatement(Queries.DELETE_DESTINATION.query);
+        stmt.setString(1, d.getIdDestination());
+        int rows = stmt.executeUpdate();
+        return rows > 0
+                ? new Response(request.getRequestId(), "Destination supprimée avec succès.")
+                : new Response(request.getRequestId(), "Destination introuvable.");
+    }
+
+    private Response selectAllActivites(Request request, Connection connection) throws SQLException, JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        Statement stmt = connection.createStatement();
+        ResultSet rs = stmt.executeQuery(Queries.SELECT_ALL_ACTIVITES.query);
+
+        Activites activites = new Activites(); // ✅ maintenant activites.getActivites() n'est plus null
+
+        while (rs.next()) {
+            Activite a = new Activite();
+            a.setIdActivite(rs.getInt(1));
+            a.setNom(rs.getString(2));
+            a.setDescription(rs.getString(3));
+            a.setPrix(rs.getDouble(4));
+            a.setImagePath(rs.getString(5));
+            a.setIdDestination(rs.getString(6));
+
+            activites.getActivites().add(a); // ✅ plus de NullPointerException ici
+        }
+
+        return new Response(request.getRequestId(), mapper.writeValueAsString(activites));
+    }
+
+
+
+    private Response selectActivitesByDestination(Request request, Connection connection) throws SQLException, JsonProcessingException {
+        // Récupère l'ID depuis le body JSON
+        String idDestination = request.getRequestBody().replace("\"", "");
+
+
+        ObjectMapper mapper = new ObjectMapper();
+        PreparedStatement stmt = connection.prepareStatement(
+                "SELECT id_activite, nom, description, prix, image_path, id_destination FROM activite WHERE id_destination = ?"
+        );
+        stmt.setString(1, idDestination);
+        ResultSet rs = stmt.executeQuery();
+
+        Activites activites = new Activites(); // Initialise avec liste vide
+
+        while (rs.next()) {
+            Activite a = new Activite();
+            a.setIdActivite(rs.getInt("id_activite"));
+            a.setNom(rs.getString("nom"));
+            a.setDescription(rs.getString("description"));
+            a.setPrix(rs.getDouble("prix"));
+            a.setImagePath(rs.getString("image_path"));
+            a.setIdDestination(rs.getString("id_destination"));
+            activites.getActivites().add(a);
+        }
+        System.out.println("Nombre d'activités récupérées pour " + idDestination + " : " + activites.getActivites().size());
+
+        return new Response(request.getRequestId(), mapper.writeValueAsString(activites));
+    }
+
+
+    private Response insertActivite(Request request, Connection connection) throws SQLException, IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        Activite a = mapper.readValue(request.getRequestBody(), Activite.class);
+        PreparedStatement stmt = connection.prepareStatement(Queries.INSERT_ACTIVITE.query, Statement.RETURN_GENERATED_KEYS);
+        stmt.setString(1, a.getNom());
+        stmt.setString(2, a.getDescription());
+        stmt.setDouble(3, a.getPrix());
+        stmt.setString(4, a.getImagePath());
+        stmt.setString(5, a.getIdDestination());
+        stmt.executeUpdate();
+        ResultSet keys = stmt.getGeneratedKeys();
+        if (keys.next()) {
+            a.setIdActivite(keys.getInt(1));
+        }
+        return new Response(request.getRequestId(), mapper.writeValueAsString(a));
+    }
+
+    private Response updateActivite(Request request, Connection connection) throws SQLException, IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        Activite a = mapper.readValue(request.getRequestBody(), Activite.class);
+        PreparedStatement stmt = connection.prepareStatement(Queries.UPDATE_ACTIVITE.query);
+        stmt.setString(1, a.getNom());
+        stmt.setString(2, a.getDescription());
+        stmt.setDouble(3, a.getPrix());
+        stmt.setString(4, a.getImagePath());
+        stmt.setString(5, a.getIdDestination());
+        stmt.setInt(6, a.getIdActivite());
+        int rows = stmt.executeUpdate();
+        return rows > 0
+                ? new Response(request.getRequestId(), "Activité mise à jour avec succès.")
+                : new Response(request.getRequestId(), "Activité introuvable ou aucune modification effectuée.");
+    }
+
+    private Response deleteActivite(Request request, Connection connection) throws SQLException, IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        Activite a = mapper.readValue(request.getRequestBody(), Activite.class);
+        PreparedStatement stmt = connection.prepareStatement(Queries.DELETE_ACTIVITE.query);
+        stmt.setInt(1, a.getIdActivite());
+        int rows = stmt.executeUpdate();
+        return rows > 0
+                ? new Response(request.getRequestId(), "Activité supprimée avec succès.")
+                : new Response(request.getRequestId(), "Activité introuvable.");
+    }
+}
 
 

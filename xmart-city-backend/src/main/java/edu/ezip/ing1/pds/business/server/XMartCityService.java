@@ -547,7 +547,6 @@ public class XMartCityService {
         final EmpreinteCarbone EmpreinteCarbone = objectMapper.readValue(request.getRequestBody(), EmpreinteCarbone.class);
 
         final PreparedStatement stmt = connection.prepareStatement(Queries.INSERT_EMPREINTE.query, Statement.RETURN_GENERATED_KEYS);
-        stmt.setInt(1, EmpreinteCarbone.getIdEmpreinte());
         stmt.setDouble(2, EmpreinteCarbone.getEmpreinteKgCO2());
 
         stmt.executeUpdate();

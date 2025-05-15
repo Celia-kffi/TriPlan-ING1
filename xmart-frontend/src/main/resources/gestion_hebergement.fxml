@@ -2,40 +2,45 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Spinner?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
+
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane style="-fx-background-color: linear-gradient(to bottom, #ffffff, #f2f2f2); -fx-font-family: 'Segoe UI', sans-serif;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.ezip.ing1.pds.GestionHebergementController">
+<BorderPane prefHeight="450.0" prefWidth="280.0" style="-fx-background-color: linear-gradient(to bottom, #ffffff, #f2f2f2); -fx-font-family: 'Segoe UI', sans-serif;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.ezip.ing1.pds.GestionHebergementController">
 
     <top>
-        <Label style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #222; -fx-padding: 20px; -fx-alignment: CENTER;" text="🌍 Gestion des Hébergements" BorderPane.alignment="CENTER" />
+        <VBox prefHeight="35.0" prefWidth="280.0" spacing="6" style="-fx-padding: 10; -fx-background-color: #1a7fa1;">
+            <Label style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #ffffff;" text="🌍 Gestion des Hébergements" textFill="WHITE" />
+            <HBox alignment="CENTER_LEFT" spacing="10" />
+        </VBox>
     </top>
 
     <center>
-        <VBox alignment="CENTER" spacing="20" style="-fx-padding: 30; -fx-background-image: carte.jpg;">
-            <ImageView fx:id="selectedImage" fitHeight="220" fitWidth="320" preserveRatio="true" style="-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 12, 0.2, 0, 2); -fx-border-radius: 20; -fx-background-radius: 20;" />
+        <VBox alignment="CENTER" spacing="12" style="-fx-padding: 15;">
+            <ImageView fx:id="selectedImage" fitHeight="140" fitWidth="200" preserveRatio="true" style="-fx-effect: dropshadow(gaussian, rgba(255,255,255,0.8), 8, 0.2, 0, 2); -fx-border-radius: 15; -fx-background-radius: 15;" />
+            <Label text="Nombre de nuits :" />
+            <Spinner fx:id="nbNuitsSpinner" prefWidth="80"/>
 
-            <Button mnemonicParsing="false" style="-fx-background-color: linear-gradient(to right, #667eea, #764ba2); -fx-background-radius: 30; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 8 16;" text="Choisir un hébergement" />
+            <Button mnemonicParsing="false" onAction="#validerHebergement" style="-fx-background-color: linear-gradient(to right, #66afea, #3707e4); -fx-background-radius: 20; -fx-text-fill: white; -fx-font-size: 12px; -fx-padding: 6 12;" text="Valider Hébergement" />
 
-            <VBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 20px; -fx-background-color: #ffffff; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0.1, 0, 2);">
-                <Label fx:id="labelNom" style="-fx-font-size: 14px; -fx-text-fill: #333;" text=" Nom :" />
-                <Label fx:id="labelPrix" style="-fx-font-size: 14px; -fx-text-fill: #333;" text=" Prix/nuit :" />
-                <Label fx:id="labelType" style="-fx-font-size: 14px; -fx-text-fill: #333;" text="️ Type :" />
-                <Label fx:id="labelEmission" style="-fx-font-size: 14px; -fx-text-fill: #333;" text="️ Emission/nuit :" />
+            <VBox alignment="CENTER_LEFT" spacing="6" style="-fx-padding: 12px; -fx-background-color: #ffffff; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 6, 0.1, 0, 2);">
+                <Label fx:id="labelNom" style="-fx-font-size: 12px; -fx-text-fill: #333;" text="Nom :" />
+                <Label fx:id="labelPrix" style="-fx-font-size: 12px; -fx-text-fill: #333;" text="Prix/nuit :" />
+                <Label fx:id="labelType" style="-fx-font-size: 12px; -fx-text-fill: #333;" text="Type :" />
+                <Label fx:id="labelEmission" style="-fx-font-size: 12px; -fx-text-fill: #333;" text="Émission/nuit :" />
             </VBox>
         </VBox>
     </center>
 
     <bottom>
-        <VBox spacing="10" style="-fx-padding: 20;">
-            <HBox alignment="CENTER" spacing="15">
-                <Button onAction="#onScrollLeft" style="-fx-background-color: transparent; -fx-text-fill: #555; -fx-font-size: 18px;" text="◀" />
-
-                <HBox fx:id="carouselBox" spacing="10" style="-fx-padding: 5;" />
-
-                <Button onAction="#onScrollRight" style="-fx-background-color: transparent; -fx-text-fill: #555; -fx-font-size: 18px;" text="▶" />
+        <VBox spacing="8" style="-fx-padding: 10;">
+            <HBox alignment="CENTER" spacing="10">
+                <Button onAction="#onScrollLeft" style="-fx-background-color: transparent; -fx-text-fill: #555; -fx-font-size: 14px;" text="◀" />
+                <HBox fx:id="carouselBox" spacing="6" style="-fx-padding: 3;" />
+                <Button onAction="#onScrollRight" style="-fx-background-color: transparent; -fx-text-fill: #555; -fx-font-size: 14px;" text="▶" />
             </HBox>
         </VBox>
     </bottom>

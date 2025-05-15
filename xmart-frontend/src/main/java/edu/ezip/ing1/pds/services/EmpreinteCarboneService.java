@@ -28,8 +28,7 @@ import java.util.List;
 public class EmpreinteCarboneService {
     private final static String LoggingLabel = "FrontEnd - EmpreinteCarboneService";
     private final static Logger logger = LoggerFactory.getLogger(LoggingLabel);
-    private final static String empreintesToBeInserted = "empreintes-to-be-inserted.yaml";
-    private Connection connection;
+
     final String insertRequestOrder = "INSERT_EMPREINTE";
     final String selectRequestOrder = "SELECT_ALL_EMPREINTES";
     final String deleteRequestOrder = "DELETE_EMPREINTE";
@@ -55,7 +54,6 @@ public class EmpreinteCarboneService {
             throws InterruptedException, IOException, SQLException {
 
         final Deque<ClientRequest> empreinteRequests = new ArrayDeque<>();
-
         final ObjectMapper objectMapper = new ObjectMapper();
         final String jsonifiedEmpreinteCarbone = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(empreinteCarbone);
         logger.trace("EmpreinteCarbone with its JSON face : {}", jsonifiedEmpreinteCarbone);
@@ -78,6 +76,7 @@ public class EmpreinteCarboneService {
             final EmpreinteCarbone processedEmpreinteCarbone = (EmpreinteCarbone) processedRequest.getInfo();
             logger.debug("Thread {} complete : {} --> {}",
                     processedRequest.getThreadName(),
+                    processedEmpreinteCarbone.getEmpreinteKgCO2(),
                     processedRequest.getResult());
         }
     }

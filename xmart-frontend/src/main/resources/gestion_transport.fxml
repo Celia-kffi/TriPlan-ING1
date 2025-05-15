@@ -1,19 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import javafx.scene.control.cell.TextFieldTableCell?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="418.0" prefWidth="623.0" style="-fx-background-color: #18534F; -fx-background-image: carte.jpg;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.ezip.ing1.pds.MoyenTransportController">
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<AnchorPane prefHeight="478.0" prefWidth="624.0" style="-fx-background-color: white; -fx-background-image: carte.jpg;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.ezip.ing1.pds.MoyenTransportController">
+    <ImageView fitHeight="480.0" fitWidth="630.0" opacity="0.7" preserveRatio="false">
+        <image>
+            <Image url="/carte.jpg" />
+        </image>
+    </ImageView>
+    <Label layoutX="176.0" layoutY="25.0" prefHeight="15.0" prefWidth="300.0" style="-fx-font-weight: bold; -fx-font-size: 16px;" text="Sélection des moyens de transport" textFill="#19525A">
+      <font>
+         <Font size="14.0" />
+      </font></Label>
 
-    <Label layoutX="20" layoutY="10" style="-fx-font-weight: bold; -fx-font-size: 16px;" text="Sélection des moyens de transport" textFill="#67edff" />
-
-    <Button layoutX="250" layoutY="380" onAction="#onValider" prefWidth="100" text="Valider" />
-    <TableView fx:id="tableMoyenTransport" layoutX="10.0" layoutY="46.0" prefHeight="300" prefWidth="600" style="-fx-background-image: carte.jpg;">
+    <Button layoutX="230.0" layoutY="382.0" onAction="#onValider" prefHeight="45.0" prefWidth="146.0" style="-fx-background-color: #017679; -fx-text-fill: white;" text="Valider" />
+    <TableView fx:id="tableMoyenTransport" layoutX="10.0" layoutY="60.0" prefHeight="300" prefWidth="600" style="-fx-background-image: carte.jpg;">
         <columns>
 
             <TableColumn fx:id="colSelect" prefWidth="100" text="Sélectionner">
@@ -46,8 +56,11 @@
                 <cellValueFactory>
                     <PropertyValueFactory property="distance" />
                 </cellValueFactory>
-
+                <cellFactory>
+                    <TextFieldTableCell fx:factory="forTableColumn" />
+                </cellFactory>
             </TableColumn>
+
         </columns>
     </TableView>
 

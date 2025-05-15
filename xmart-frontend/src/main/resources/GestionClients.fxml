@@ -6,7 +6,6 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
@@ -14,6 +13,7 @@
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
+<?import javafx.scene.image.Image?>
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="579.0" prefWidth="862.0" style="-fx-background-color: #f8f7ef;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.ezip.ing1.pds.GestionClientsController">
     <children>
 
@@ -100,9 +100,9 @@
         </VBox>
 
         
-        <HBox alignment="CENTER" layoutX="583.0" layoutY="473.0" prefHeight="41.0" prefWidth="247.0" spacing="20.0">
+        <HBox alignment="CENTER" layoutX="459.0" layoutY="473.0" prefHeight="41.0" prefWidth="371.0" spacing="20.0">
             <children>
-                <Button mnemonicParsing="false" onAction="#modifierClient" prefHeight="40.0" prefWidth="110.0" style="-fx-background-color: #0b98b4;" text="Modifier " textFill="WHITE">
+                <Button mnemonicParsing="false" onAction="#modifierClient" prefHeight="40.0" prefWidth="106.0" style="-fx-background-color: #0b98b4;" text="Modifier " textFill="WHITE">
                     <font>
                         <Font name="System Bold" size="13.0" />
                     </font>
@@ -112,11 +112,16 @@
                         <Font size="13.0" />
                     </font>
                 </Button>
+            <Button mnemonicParsing="false" onAction="#handleAnnuler" prefHeight="39.0" prefWidth="104.0" style="-fx-background-color: #749ba6;" text="Annuler" textFill="WHITE">
+               <font>
+                  <Font name="System Bold" size="13.0" />
+               </font>
+            </Button>
             </children>
         </HBox>
       <ImageView fitHeight="51.0" fitWidth="67.0" layoutX="14.0" layoutY="10.0" pickOnBounds="true" preserveRatio="true">
          <image>
-            <Image url="/icone.png" />
+             <Image url="/icone.png" />
          </image>
       </ImageView>
       <HBox layoutX="13.0" layoutY="527.0" prefHeight="51.0" prefWidth="273.0" spacing="20.0">

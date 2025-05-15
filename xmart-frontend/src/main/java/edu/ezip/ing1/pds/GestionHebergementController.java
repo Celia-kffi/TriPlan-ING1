@@ -11,8 +11,8 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,10 +24,15 @@ public class GestionHebergementController {
     @FXML private Label labelPrix;
     @FXML private Label labelType;
     @FXML private Label labelEmission;
+    @FXML private Spinner<Integer> nbNuitsSpinner;
 
     private HebergementService hebergementService;
-    private int currentIndex = 0;
     private List<Hebergement> hebergementsList = new ArrayList<>();
+    private List<ImageView> allImageViews = new ArrayList<>();
+
+    private int currentIndex = 0;
+    private int startIndex = 0;
+    private final int visibleCount = 4;
 
     private EmpreinteCarboneController empreinteCarboneController;
 
@@ -44,6 +49,7 @@ public class GestionHebergementController {
         } catch (Exception e) {
             showAlert(Alert.AlertType.ERROR, "Erreur de configuration", e.getMessage());
         }
+        nbNuitsSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 30, 1));
     }
 
     private void loadHebergements() {
@@ -51,10 +57,10 @@ public class GestionHebergementController {
             Hebergements response = hebergementService.selectHebergement();
             if (response != null && response.getHebergements() != null) {
                 hebergementsList = new ArrayList<>(response.getHebergements());
-                carouselBox.getChildren().clear();
+                allImageViews.clear();
+
                 for (int i = 0; i < hebergementsList.size(); i++) {
                     Hebergement h = hebergementsList.get(i);
-                    StackPane stackPane = new StackPane();
                     ImageView imageView = new ImageView();
                     imageView.setFitWidth(120);
                     imageView.setFitHeight(90);
@@ -71,17 +77,64 @@ public class GestionHebergementController {
                     int finalI = i;
                     imageView.setOnMouseClicked(event -> {
                         currentIndex = finalI;
+                        if (currentIndex < startIndex) {
+                            startIndex = currentIndex;
+                        } else if (currentIndex >= startIndex + visibleCount) {
+                            startIndex = currentIndex - visibleCount + 1;
+                        }
                         updateCarousel();
                     });
 
-                    carouselBox.getChildren().add(imageView);
+                    allImageViews.add(imageView);
                 }
-                if (!hebergementsList.isEmpty()) {
-                    updateCarousel();
-                }
+                currentIndex = 0;
+                startIndex = 0;
+                updateCarousel();
             }
         } catch (Exception e) {
             showAlert(Alert.AlertType.ERROR, "Erreur chargement", e.getMessage());
+        }
+    }
+
+    private void updateCarousel() {
+        carouselBox.getChildren().clear();
+
+        int endIndex = Math.min(startIndex + visibleCount, allImageViews.size());
+        for (int i = startIndex; i < endIndex; i++) {
+            ImageView imgView = allImageViews.get(i);
+            if (i == currentIndex) {
+                imgView.setStyle("-fx-border-color: red; -fx-border-width: 4px; -fx-border-radius: 5px;");
+            } else {
+                imgView.setStyle("-fx-border-color: black; -fx-border-width: 3px; -fx-border-radius: 5px;");
+            }
+            carouselBox.getChildren().add(imgView);
+        }
+
+        if (!hebergementsList.isEmpty()) {
+            showHebergementDetails(hebergementsList.get(currentIndex));
+        }
+    }
+
+    @FXML
+    private void onScrollRight() {
+        if (startIndex + visibleCount < allImageViews.size()) {
+            startIndex++;
+            if (currentIndex < startIndex) {
+                currentIndex = startIndex;
+            }
+            updateCarousel();
+        }
+    }
+
+    @FXML
+    private void onScrollLeft() {
+
+        if (startIndex > 0) {
+            startIndex--;
+            if (currentIndex > startIndex + visibleCount - 1) {
+                currentIndex = startIndex + visibleCount - 1;
+            }
+            updateCarousel();
         }
     }
 
@@ -99,29 +152,6 @@ public class GestionHebergementController {
         labelEmission.setText("Emission/nuit : " + h.getEmissionParNuit() + " KgCO2");
     }
 
-    @FXML
-    private void onScrollRight() {
-        if (currentIndex < hebergementsList.size() - 1) {
-            currentIndex++;
-            updateCarousel();
-        }
-    }
-
-    @FXML
-    private void onScrollLeft() {
-        if (currentIndex > 0) {
-            currentIndex--;
-            updateCarousel();
-        }
-    }
-
-    private void updateCarousel() {
-        if (!hebergementsList.isEmpty()) {
-            Hebergement current = hebergementsList.get(currentIndex);
-            showHebergementDetails(current);
-        }
-    }
-
     private void showAlert(Alert.AlertType type, String header, String content) {
         Alert alert = new Alert(type);
         alert.setHeaderText(header);
@@ -129,12 +159,12 @@ public class GestionHebergementController {
         alert.showAndWait();
     }
 
-
     @FXML
     private void validerHebergement() {
         if (!hebergementsList.isEmpty()) {
             Hebergement selectionne = hebergementsList.get(currentIndex);
-            int nbNuits = 2;
+            int nbNuits = nbNuitsSpinner.getValue();
+
             if (empreinteCarboneController != null) {
                 empreinteCarboneController.setHebergementEtNuits(selectionne, nbNuits);
             }

@@ -47,6 +47,9 @@ public class MoyenTransportController {
     }
 
     private void initTableColumns() {
+        tableMoyenTransport.setEditable(true);
+        colDistance.setEditable(true);
+
         colSelect.setCellValueFactory(cellData -> cellData.getValue().selectedProperty());
         colSelect.setCellFactory(CheckBoxTableCell.forTableColumn(colSelect));
 
@@ -57,12 +60,13 @@ public class MoyenTransportController {
         colDistance.setCellValueFactory(cellData -> cellData.getValue().distanceProperty());
         colDistance.setCellFactory(TextFieldTableCell.forTableColumn());
 
-
         colDistance.setOnEditCommit(event -> {
             TransportSelection ts = event.getRowValue();
-            if (!ts.selectedProperty().get()) { // Si la case n'est pas cochée
-                event.consume(); // Empêche l'édition de la distance
+            if (ts.selectedProperty().get()) {
+                ts.distanceProperty().set(event.getNewValue());
+            } else {
                 showAlert(Alert.AlertType.WARNING, "Sélection non cochée", "Veuillez cocher la case avant de saisir une distance.");
+                tableMoyenTransport.refresh();
             }
         });
 
@@ -86,25 +90,44 @@ public class MoyenTransportController {
     @FXML
     private void onValider() {
         float total = 0;
+        StringBuilder erreurs = new StringBuilder();
+
         for (TransportSelection ts : selectionList) {
             if (ts.selectedProperty().get()) {
+                String distanceStr = ts.distanceProperty().get();
+                if (distanceStr == null || distanceStr.trim().isEmpty()) {
+                    erreurs.append("- ").append(ts.getTransport().getTypeTransports())
+                            .append(" : distance manquante\n");
+                    continue;
+                }
+
                 try {
-                    float km = Float.parseFloat(ts.distanceProperty().get());
+                    float km = Float.parseFloat(distanceStr.trim());
                     total += ts.getTransport().getFacteurEmission() * km;
                 } catch (NumberFormatException e) {
-                    showAlert(Alert.AlertType.ERROR, "Erreur", "Distance invalide pour " + ts.getTransport().getTypeTransports());
-                    return;
+                    erreurs.append("- ").append(ts.getTransport().getTypeTransports())
+                            .append(" : distance invalide\n");
                 }
             }
         }
 
+        if (erreurs.length() > 0) {
+            showAlert(Alert.AlertType.WARNING, "Certains champs sont invalides", erreurs.toString());
+        }
+
+        if (total == 0) {
+            showAlert(Alert.AlertType.INFORMATION, "Aucune empreinte calculée", "Aucun moyen de transport valide sélectionné.");
+            return;
+        }
+
         if (empreinteCarboneController != null) {
-            MoyenTransport synthese = new MoyenTransport("multiple", "Transports multiples", 1.0f); // Dummy
+            MoyenTransport synthese = new MoyenTransport("multiple", "Transports multiples", 1.0f);
             empreinteCarboneController.setTransportEtDistance(synthese, total);
         }
 
         ((Stage) tableMoyenTransport.getScene().getWindow()).close();
     }
+
 
     private void showAlert(Alert.AlertType type, String header, String content) {
         Alert alert = new Alert(type);
@@ -124,18 +147,6 @@ public class MoyenTransportController {
 
         public MoyenTransport getTransport() {
             return transport;
-        }
-
-        public StringProperty idMoyenDestinationProperty() {
-            return new SimpleStringProperty(transport.getIdMoyenDestination());
-        }
-
-        public StringProperty typeTransportsProperty() {
-            return new SimpleStringProperty(transport.getTypeTransports());
-        }
-
-        public DoubleProperty facteurEmissionProperty() {
-            return new SimpleDoubleProperty(transport.getFacteurEmission());
         }
 
         public BooleanProperty selectedProperty() {

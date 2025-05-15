@@ -1,27 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox xmlns="http://javafx.com/javafx/8"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="edu.ezip.ing1.pds.EmpreinteCarboneController"
-      spacing="10">
+<VBox alignment="CENTER" prefHeight="504.0" prefWidth="527.0" spacing="20" style="-fx-background-color: #f8f7ef; -fx-padding: 30;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.ezip.ing1.pds.EmpreinteCarboneController">
 
-    <padding>
-        <Insets top="20.0" right="20.0" bottom="20.0" left="20.0"/>
-    </padding>
 
-    <Label fx:id="labelHebergement" text="Hébergement : Aucun"/>
-    <Label fx:id="labelTransport" text="Transport : Aucun"/>
-    <Label fx:id="labelDistance" text="Distance : 0 km"/>
-    <Label fx:id="labelNuits" text="Nuits : 0"/>
+    <Label style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2e2e2e;" text="Empreinte Carbone" />
 
-    <Button text="Choisir un hébergement" onAction="#allerVersHebergement"/>
-    <Button text="Choisir un transport" onAction="#allerVersTransport"/>
-    <Button text="Calculer l'empreinte carbone" onAction="#calculerEmpreinte"/>
 
-    <Label fx:id="resultatLabel" text="Résultat ici..." style="-fx-font-weight: bold;"/>
+
+    <VBox spacing="10" style="-fx-background-color: #88C7BC; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+        <Label fx:id="labelHebergement" style="-fx-font-size: 14px;" text="Hébergement : Aucun" />
+        <Label fx:id="labelTransport" style="-fx-font-size: 14px;" text="Transport : Aucun" />
+        <Label fx:id="labelDistance" style="-fx-font-size: 14px;" text="Empreinte transport : 0 kgCO2" />
+        <Label fx:id="labelNuits" style="-fx-font-size: 14px;" text="Nuits : 0" />
+    </VBox>
+
+    <VBox prefHeight="117.0" prefWidth="303.0" spacing="10">
+        <Button onAction="#allerVersHebergement" style="-fx-background-color: #01A98D; -fx-text-fill: white; -fx-font-size: 14px; -fx-background-radius: 8;" text="Choisir un hébergement" />
+
+                    <Button onAction="#allerVersTransport" style="-fx-background-color: #038A91; -fx-text-fill: white; -fx-font-size: 14px; -fx-background-radius: 8;" text="Choisir un transport" textAlignment="CENTER" />
+
+                    <Button onAction="#calculerEmpreinte" style="-fx-background-color: #06708E; -fx-text-fill: white; -fx-font-size: 14px; -fx-background-radius: 8;" text="Calculer l'empreinte carbone" />
+    </VBox>
+
+    <Label fx:id="resultatLabel" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #333333;" text="Résultat ici..." />
+    <Button onAction="#enregistrerEmpreinte" style="-fx-background-color: #055A70; -fx-text-fill: white; -fx-font-size: 14px; -fx-background-radius: 8;" text="Enregistrer" />
+
 </VBox>

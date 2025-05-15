@@ -17,7 +17,7 @@ public class MainFrontEnd extends Application {
     @Override
     public void start(Stage primaryStage) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/gestion_transport.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/gestion_empreinte.fxml"));
             Parent root = loader.load();
             Scene scene = new Scene(root);
             primaryStage.setTitle("TriPlan");

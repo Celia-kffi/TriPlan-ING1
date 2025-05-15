@@ -9,8 +9,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,7 +77,7 @@ public class MainController {
     private void handleAvis(ActionEvent event) {
         try {
 
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/VoyageView.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/GestionAvisClients.fxml"));
 
             Parent root = loader.load();
             Scene scene = new Scene(root);
@@ -103,21 +101,21 @@ public class MainController {
     private void handleEmpreinte(ActionEvent event) {
         try {
 
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/VoyageView.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(""));
 
             Parent root = loader.load();
             Scene scene = new Scene(root);
 
 
             Stage stage= new Stage();
-            stage.setTitle("Empreinte Carbone");
+            stage.setTitle("Destinations et activites");
             stage.setScene(scene);
 
 
             stage.show();
         } catch (IOException e) {
-            logger.error("Erreur lors de l'affichage de Empreinte Carbone", e);
-            showError("Erreur lors de l'affichage de Empreinte Carbone");
+            logger.error("Erreur lors de l'affichage de la liste des empreintes", e);
+            showError("Erreur lors de l'affichage de la liste des empreintes");
         }
     }
 

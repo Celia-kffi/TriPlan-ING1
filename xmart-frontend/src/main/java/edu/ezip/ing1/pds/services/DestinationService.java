@@ -24,7 +24,7 @@ public class DestinationService {
     private final static String LoggingLabel = "FrontEnd - DestinationService";
     private final static Logger logger = LoggerFactory.getLogger(LoggingLabel);
 
-    final String selectRequestOrder = "SELECT_ALL_DESTINATIONS";
+    private static final String SELECT_REQUEST_ORDER = "SELECT_ALL_DESTINATIONS";
 
     private final NetworkConfig networkConfig;
 
@@ -33,28 +33,40 @@ public class DestinationService {
     }
 
     public Destinations selectDestinations() throws InterruptedException, IOException {
-        final Deque<ClientRequest> destinationRequests = new ArrayDeque<>();
+        final Deque<ClientRequest> requests = new ArrayDeque<>();
         final ObjectMapper objectMapper = new ObjectMapper();
 
         final String requestId = UUID.randomUUID().toString();
         final Request request = new Request();
         request.setRequestId(requestId);
-        request.setRequestOrder(selectRequestOrder);
+        request.setRequestOrder(SELECT_REQUEST_ORDER);
+
         objectMapper.enable(SerializationFeature.WRAP_ROOT_VALUE);
         final byte[] requestBytes = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(request);
-        LoggingUtils.logDataMultiLine(logger, Level.TRACE, requestBytes);
 
-        final SelectAllDestinationsClientRequest destinationRequest = new SelectAllDestinationsClientRequest(
-                networkConfig, 0, request, null, requestBytes);
-        destinationRequests.push(destinationRequest);
+        logger.info("📤 Envoi de la requête {}", SELECT_REQUEST_ORDER);
+        LoggingUtils.logDataMultiLine(logger, Level.DEBUG, requestBytes);
 
-        if (!destinationRequests.isEmpty()) {
-            final ClientRequest joinedDestinationRequest = destinationRequests.pop();
-            joinedDestinationRequest.join();
-            logger.debug("Thread {} complete.", joinedDestinationRequest.getThreadName());
-            return (Destinations) joinedDestinationRequest.getResult();
+        final SelectAllDestinationsClientRequest clientRequest = new SelectAllDestinationsClientRequest(
+                networkConfig, 0, request, null, requestBytes
+        );
+        requests.push(clientRequest);
+
+        if (!requests.isEmpty()) {
+            final ClientRequest joined = requests.pop();
+            joined.join();
+
+            logger.info("📥 Résultat brut reçu : {}", joined.getResult());
+
+            Object result = joined.getResult();
+            if (result instanceof Destinations) {
+                return (Destinations) result;
+            } else {
+                logger.error("❌ Type de réponse inattendu : {}", result != null ? result.getClass() : "null");
+                return null;
+            }
         } else {
-            logger.error("No destinations found");
+            logger.error("❌ Aucun résultat à traiter (pile vide)");
             return null;
         }
     }

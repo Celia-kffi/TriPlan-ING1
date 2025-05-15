@@ -223,6 +223,24 @@ public class GestionVoyage {
         }
     }
 
+    @FXML
+    private void handleActivitees(ActionEvent event){
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(""));
+            Parent root = loader.load();
+            Scene scene = new Scene(root);
+
+            Stage stage = new Stage();
+            stage.setTitle("Liste des voyages");
+            stage.setScene(scene);
+            stage.show();
+        } catch (IOException e) {
+            showAlert("Erreur", "Une erreur est survenue lors de l'ouverture de la liste des voyages.");
+            e.printStackTrace();
+        }
+
+    }
+
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);

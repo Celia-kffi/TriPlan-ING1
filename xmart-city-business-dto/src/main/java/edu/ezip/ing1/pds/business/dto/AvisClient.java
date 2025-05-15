@@ -3,9 +3,6 @@ package edu.ezip.ing1.pds.business.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRootName;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 @JsonRootName("avis_client")
 public class AvisClient {
 
@@ -14,6 +11,10 @@ public class AvisClient {
     private String dateAvis;
     private String commentaires;
     private int idClient;
+
+    private String nomClient;
+    private String prenomClient;
+    private int ageClient;
 
     public AvisClient() {
     }
@@ -26,20 +27,14 @@ public class AvisClient {
         this.idClient = idClient;
     }
 
-//    public final AvisClient build(final ResultSet resultSet) throws SQLException {
-//        this.idAvis = resultSet.getInt("id_avis");
-//        this.note = resultSet.getInt("note");
-//        this.dateAvis = resultSet.getString("date_avis");
-//        this.commentaires = resultSet.getString("commentaires");
-//        this.idClient = resultSet.getInt("id_client");
-//        return this;
-//    }
-
     public int getIdAvis() { return idAvis; }
     public int getNote() { return note; }
     public String getDateAvis() { return dateAvis; }
     public String getCommentaires() { return commentaires; }
     public int getIdClient() { return idClient; }
+    public String getNomClient() { return nomClient; }
+    public String getPrenomClient() { return prenomClient; }
+    public int getAgeClient() { return ageClient; }
 
     @JsonProperty("id_avis")
     public void setIdAvis(int idAvis) { this.idAvis = idAvis; }
@@ -56,6 +51,15 @@ public class AvisClient {
     @JsonProperty("id_client")
     public void setIdClient(int idClient) { this.idClient = idClient; }
 
+    @JsonProperty("nom_client")
+    public void setNomClient(String nomClient) { this.nomClient = nomClient; }
+
+    @JsonProperty("prenom_client")
+    public void setPrenomClient(String prenomClient) { this.prenomClient = prenomClient; }
+
+    @JsonProperty("age_client")
+    public void setAgeClient(int ageClient) { this.ageClient = ageClient; }
+
     @Override
     public String toString() {
         return "AvisClient{" +
@@ -64,6 +68,9 @@ public class AvisClient {
                 ", dateAvis='" + dateAvis + '\'' +
                 ", commentaires='" + commentaires + '\'' +
                 ", idClient=" + idClient +
+                ", nomClient='" + nomClient + '\'' +
+                ", prenomClient='" + prenomClient + '\'' +
+                ", ageClient=" + ageClient +
                 '}';
     }
 }

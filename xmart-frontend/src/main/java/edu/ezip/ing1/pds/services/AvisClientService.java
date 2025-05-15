@@ -22,6 +22,7 @@ import edu.ezip.ing1.pds.requests.InsertAvisClientRequest;
 import edu.ezip.ing1.pds.requests.SelectAllAvisClientsRequest;
 import edu.ezip.ing1.pds.requests.UpdateAvisClientRequest;
 import edu.ezip.ing1.pds.requests.DeleteAvisClientRequest;
+import edu.ezip.ing1.pds.requests.FindClientIdByNomPrenomRequest;
 
 public class AvisClientService {
 
@@ -32,6 +33,7 @@ public class AvisClientService {
     final String selectRequestOrder = "SELECT_ALL_AVIS";
     final String deleteRequestOrder = "DELETE_AVIS";
     final String updateRequestOrder = "UPDATE_AVIS";
+    final String findClientIdRequestOrder = "FIND_CLIENT_ID_BY_NOM_PRENOM";
 
     private final NetworkConfig networkConfig;
 
@@ -106,5 +108,23 @@ public class AvisClientService {
             logger.error("Aucun avis trouvé");
             return null;
         }
+    }
+
+    public int findClientIdByNomPrenom(String nom, String prenom) throws InterruptedException, IOException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final String[] nomPrenom = { nom, prenom };
+        final String requestId = UUID.randomUUID().toString();
+        final Request request = new Request();
+        request.setRequestId(requestId);
+        request.setRequestOrder(findClientIdRequestOrder);
+        request.setRequestContent(objectMapper.writeValueAsString(nomPrenom));
+        objectMapper.enable(SerializationFeature.WRAP_ROOT_VALUE);
+        final byte[] requestBytes = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(request);
+
+        final FindClientIdByNomPrenomRequest clientRequest = new FindClientIdByNomPrenomRequest(
+                networkConfig, 0, request, null, requestBytes);
+        clientRequest.join();
+
+        return Integer.parseInt(clientRequest.getResult().toString());
     }
 }

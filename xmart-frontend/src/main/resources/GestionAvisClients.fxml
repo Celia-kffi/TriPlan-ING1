@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.collections.FXCollections?>
+
+<?import java.lang.Integer?>
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="edu.ezip.ing1.pds.GestionAvisClientsController"
+            prefWidth="800.0" prefHeight="600.0">
+
+    <top>
+        <Label text="Gestion des Avis Clients"
+               style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-background-color: #4682B4; -fx-text-fill: white;"
+               maxWidth="Infinity">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+        </Label>
+    </top>
+
+    <center>
+        <TableView fx:id="tableAvis" prefHeight="300">
+            <columns>
+                <TableColumn fx:id="colIdAvis" text="ID" visible="false"/>
+                <TableColumn fx:id="colNote" text="Note" prefWidth="60"/>
+                <TableColumn fx:id="colDate" text="Date" prefWidth="100"/>
+                <TableColumn fx:id="colCommentaire" text="Commentaire" prefWidth="250"/>
+                <TableColumn fx:id="colNomClient" text="Nom" prefWidth="100"/>
+                <TableColumn fx:id="colPrenomClient" text="Prénom" prefWidth="100"/>
+            </columns>
+        </TableView>
+    </center>
+
+    <right>
+        <VBox spacing="10">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
+
+            <Label text="Note :" />
+            <ComboBox fx:id="noteComboBox" promptText="Sélectionner une note">
+                <items>
+                    <FXCollections fx:factory="observableArrayList">
+                        <Integer fx:value="1"/>
+                        <Integer fx:value="2"/>
+                        <Integer fx:value="3"/>
+                        <Integer fx:value="4"/>
+                        <Integer fx:value="5"/>
+                    </FXCollections>
+                </items>
+            </ComboBox>
+
+            <Label text="Date :" />
+            <DatePicker fx:id="datePicker" promptText="Sélectionner une date" />
+
+            <Label text="Commentaire :" />
+            <TextField fx:id="txtCommentaire" />
+
+            <Label text="Nom du client :" />
+            <TextField fx:id="txtNomClient" />
+
+            <Label text="Prénom du client :" />
+            <TextField fx:id="txtPrenomClient" />
+
+            <Button text="Enregistrer" onAction="#ajouterAvis"
+                    style="-fx-background-color: #27ae60; -fx-text-fill: white;" />
+        </VBox>
+    </right>
+
+    <bottom>
+        <HBox spacing="15" alignment="CENTER">
+            <padding>
+                <Insets top="15" right="15" bottom="15" left="15"/>
+            </padding>
+
+            <Button text="Modifier" onAction="#modifierAvis"
+                    style="-fx-background-color: #f39c12; -fx-text-fill: white;" />
+
+            <Button text="Supprimer" onAction="#supprimerAvis"
+                    style="-fx-background-color: #c0392b; -fx-text-fill: white;" />
+
+            <Button text="Actualiser" onAction="#initialize"
+                    style="-fx-background-color: #2980b9; -fx-text-fill: white;" />
+        </HBox>
+    </bottom>
+</BorderPane>

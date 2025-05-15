@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="edu.ezip.ing1.pds.ActivitesController">
+
+    <top>
+        <Label fx:id="labelTitre"
+               style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-padding: 10;" />
+    </top>
+
+    <center>
+        <TableView fx:id="tableActivites">
+            <columns>
+                <TableColumn fx:id="colIdActivite" text="ID" prefWidth="60"/>
+                <TableColumn fx:id="colNom" text="Nom Activité" prefWidth="150"/>
+                <TableColumn fx:id="colDescription" text="Description" prefWidth="250"/>
+                <TableColumn fx:id="colPrix" text="Prix (€)" prefWidth="80"/>
+                <TableColumn fx:id="colImagePath" text="Image" prefWidth="120"/>
+                <TableColumn fx:id="colIdDestination" text="ID Destination" prefWidth="120"/>
+            </columns>
+        </TableView>
+    </center>
+
+</BorderPane>

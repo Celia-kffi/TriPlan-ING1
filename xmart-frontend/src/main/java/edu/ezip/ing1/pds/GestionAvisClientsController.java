@@ -77,6 +77,17 @@ public class GestionAvisClientsController {
                 remplirFormulaire(newSelection);
             }
         });
+        datePicker.setDayCellFactory(picker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                if (date.isAfter(LocalDate.now())) {
+                    setDisable(true);
+                }
+            }
+        });
+
+
 
         actualiserListe();
     }
@@ -129,7 +140,7 @@ public class GestionAvisClientsController {
                         null, "Aucun client trouvé avec le nom " + nomClient + " et prénom " + prenomClient);
                 return;
 
-                // 💡 Si tu veux créer un nouveau client automatiquement, décommente ceci :
+                //Si tu veux créer un nouveau client automatiquement, décommente ceci :
             /*
             Client newClient = new Client(nomClient, prenomClient, 0, "FR", 0.0, "AUCUN");
             idClient = avisClientService.insertClient(newClient); // à implémenter si besoin

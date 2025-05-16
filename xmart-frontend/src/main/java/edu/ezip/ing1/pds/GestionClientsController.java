@@ -94,6 +94,19 @@ public class GestionClientsController {
                 }
         );
 
+        tableClients.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+                Client selected = tableClients.getSelectionModel().getSelectedItem();
+                if (selected != null && selected.equals(selectedClient)) {
+                    tableClients.getSelectionModel().clearSelection();
+                    selectedClient = null;
+                    viderFormulaire();
+                }
+            }
+        });
+
+
+
         actualiserListe();
 
 

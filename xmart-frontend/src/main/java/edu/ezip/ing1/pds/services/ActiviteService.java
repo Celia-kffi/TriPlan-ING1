@@ -52,7 +52,7 @@ public class ActiviteService {
         request.setRequestId(requestId);
         request.setRequestOrder(requestOrder);
 
-        // ✅ Convertir String en JsonNode si nécessaire
+        // Convertir String en JsonNode si nécessaire
         if (requestBody != null) {
             request.setRequestBody(objectMapper.readTree("\"" + requestBody + "\"")); // ex: "D004"
         }

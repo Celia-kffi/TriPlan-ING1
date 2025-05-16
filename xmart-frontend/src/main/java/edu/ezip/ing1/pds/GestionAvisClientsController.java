@@ -163,18 +163,27 @@ public class GestionAvisClientsController {
             String nomClient = txtNomClient.getText();
             String prenomClient = txtPrenomClient.getText();
 
-            int idClient = avisClientService.findClientIdByNomPrenom(nomClient, prenomClient);
+            AvisClient avis = new AvisClient();
+            avis.setIdAvis(selectedAvis.getIdAvis());
+            avis.setNote(note);
+            avis.setDateAvis(date);
+            avis.setCommentaires(commentaire);
+            avis.setNomClient(nomClient);
+            avis.setPrenomClient(prenomClient);
 
-            AvisClient avis = new AvisClient(selectedAvis.getIdAvis(), note, date, commentaire, idClient);
             avisClientService.updateAvis(avis);
+
             actualiserListe();
             viderFormulaire();
             selectedAvis = null;
+
             showAlert(Alert.AlertType.INFORMATION, "Modification réussie", null, "L'avis a été modifié avec succès");
+
         } catch (Exception e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Modification échouée", e.getMessage());
         }
     }
+
 
     @FXML
     private void supprimerAvis() {

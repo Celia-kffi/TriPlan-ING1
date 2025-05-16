@@ -303,13 +303,16 @@ public class XMartCityService {
         final ObjectMapper objectMapper = new ObjectMapper();
         final AvisClient avisClient = objectMapper.readValue(request.getRequestBody(), AvisClient.class);
 
+        // Vérification de l'idAvis
+        if (avisClient.getIdAvis() <= 0) {
+            return new Response(request.getRequestId(), "ID de l'avis invalide ou manquant.");
+        }
 
+        // Recherche de l'ID client à partir du nom et prénom
         int idClient = -1;
-
-        try {
-            final PreparedStatement getClientStmt = connection.prepareStatement(
-                    "SELECT id_client FROM clients WHERE LOWER(nom) = LOWER(?) AND LOWER(prenom) = LOWER(?)"
-            );
+        try (PreparedStatement getClientStmt = connection.prepareStatement(
+                "SELECT id_client FROM clients WHERE LOWER(nom) = LOWER(?) AND LOWER(prenom) = LOWER(?)"
+        )) {
             getClientStmt.setString(1, avisClient.getNomClient());
             getClientStmt.setString(2, avisClient.getPrenomClient());
 
@@ -323,22 +326,25 @@ public class XMartCityService {
             return new Response(request.getRequestId(), "Erreur lors de la récupération du client : " + e.getMessage());
         }
 
+        // Requête de mise à jour de l'avis
+        String sql = "UPDATE avis_clients SET note = ?, date_avis = ?, commentaires = ?, id_client = ? WHERE id_avis = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, avisClient.getNote());
+            stmt.setString(2, avisClient.getDateAvis());
+            stmt.setString(3, avisClient.getCommentaires());
+            stmt.setInt(4, idClient);
+            stmt.setInt(5, avisClient.getIdAvis());
 
-        final PreparedStatement stmt = connection.prepareStatement(Queries.UPDATE_AVIS.query);
-        stmt.setInt(1, avisClient.getNote());
-        stmt.setString(2, avisClient.getDateAvis());
-        stmt.setString(3, avisClient.getCommentaires());
-        stmt.setInt(4, idClient);
-        stmt.setInt(5, avisClient.getIdAvis());
+            int rowsAffected = stmt.executeUpdate();
 
-        int rowsAffected = stmt.executeUpdate();
-
-        if (rowsAffected > 0) {
-            return new Response(request.getRequestId(), "Avis mis à jour avec succès.");
-        } else {
-            return new Response(request.getRequestId(), "Avis introuvable ou aucune modification effectuée.");
+            if (rowsAffected > 0) {
+                return new Response(request.getRequestId(), "Avis mis à jour avec succès.");
+            } else {
+                return new Response(request.getRequestId(), "Avis introuvable ou aucune modification effectuée.");
+            }
         }
     }
+
 
     private Response selectAllClients(final Request request, final Connection connection) throws SQLException, JsonProcessingException {
         final ObjectMapper objectMapper = new ObjectMapper();

@@ -258,6 +258,16 @@ public class GestionClientsController {
         }
     }
 
+    @FXML
+    private void handleAnnuler(ActionEvent event) {
+        txtNom.clear();
+        txtPrenom.clear();
+        txtAge.clear();
+        txtNationalite.clear();
+        txtBudget.clear();
+        txtIdPaiement.clear();
+    }
+
 
     private void showAlert(AlertType type, String title, String header, String content) {
         Alert alert = new Alert(type);

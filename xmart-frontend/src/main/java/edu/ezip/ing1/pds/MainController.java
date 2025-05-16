@@ -101,14 +101,14 @@ public class MainController {
     private void handleEmpreinte(ActionEvent event) {
         try {
 
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(""));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/gestion_empreinte.fxml"));
 
             Parent root = loader.load();
             Scene scene = new Scene(root);
 
 
             Stage stage= new Stage();
-            stage.setTitle("Destinations et activites");
+            stage.setTitle("Empreinte carbone");
             stage.setScene(scene);
 
 

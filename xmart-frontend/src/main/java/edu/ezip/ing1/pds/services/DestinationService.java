@@ -62,11 +62,11 @@ public class DestinationService {
             if (result instanceof Destinations) {
                 return (Destinations) result;
             } else {
-                logger.error("❌ Type de réponse inattendu : {}", result != null ? result.getClass() : "null");
+                logger.error("Type de réponse inattendu : {}", result != null ? result.getClass() : "null");
                 return null;
             }
         } else {
-            logger.error("❌ Aucun résultat à traiter (pile vide)");
+            logger.error("Aucun résultat à traiter (pile vide)");
             return null;
         }
     }

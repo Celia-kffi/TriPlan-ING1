@@ -44,7 +44,7 @@ public class DestinationService {
         objectMapper.enable(SerializationFeature.WRAP_ROOT_VALUE);
         final byte[] requestBytes = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(request);
 
-        logger.info("📤 Envoi de la requête {}", SELECT_REQUEST_ORDER);
+        logger.info(" Envoi de la requête {}", SELECT_REQUEST_ORDER);
         LoggingUtils.logDataMultiLine(logger, Level.DEBUG, requestBytes);
 
         final SelectAllDestinationsClientRequest clientRequest = new SelectAllDestinationsClientRequest(
@@ -56,7 +56,7 @@ public class DestinationService {
             final ClientRequest joined = requests.pop();
             joined.join();
 
-            logger.info("📥 Résultat brut reçu : {}", joined.getResult());
+            logger.info("Résultat brut reçu : {}", joined.getResult());
 
             Object result = joined.getResult();
             if (result instanceof Destinations) {

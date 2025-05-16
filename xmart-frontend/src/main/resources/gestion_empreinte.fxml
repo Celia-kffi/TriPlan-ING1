@@ -27,6 +27,5 @@
     </VBox>
 
     <Label fx:id="resultatLabel" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #333333;" text="Résultat ici..." />
-    <Button onAction="#enregistrerEmpreinte" style="-fx-background-color: #055A70; -fx-text-fill: white; -fx-font-size: 14px; -fx-background-radius: 8;" text="Enregistrer" />
 
 </VBox>

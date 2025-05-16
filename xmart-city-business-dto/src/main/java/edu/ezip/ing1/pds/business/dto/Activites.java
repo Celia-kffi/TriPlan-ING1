@@ -6,12 +6,12 @@ import java.util.List;
 public class Activites {
     private List<Activite> activites;
 
-    // ✅ Constructeur par défaut qui initialise la liste
+    // Constructeur par défaut qui initialise la liste
     public Activites() {
         this.activites = new ArrayList<>();
     }
 
-    // ✅ Constructeur utile si on a déjà la liste
+    // Constructeur utile si on a déjà la liste
     public Activites(List<Activite> activites) {
         this.activites = activites;
     }
